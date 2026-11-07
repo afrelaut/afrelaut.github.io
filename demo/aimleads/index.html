@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AimLeads démo</title>
+<meta name="description" content="Démo interactive d'AimLeads, l'outil IA de qualification de leads conçu par Aymeric Frelaut : scoring ICP de 0 à 100 et enrichissement IA.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f5bff'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='700' font-size='15' fill='white' text-anchor='middle'%3EAF%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f7f5; --surface: #ffffff; --text: #15161a; --muted: #5c606b; --line: #e3e4e8;
+    --accent: #2f5bff; --accent-soft: #e8edff;
+    --c-excellent: #0f7a52; --c-excellent-bg: #dcf3e8;
+    --c-strong: #3a7d1e; --c-strong-bg: #e7f4dc;
+    --c-medium: #8a5a00; --c-medium-bg: #fbf0d9;
+    --c-low: #5c606b; --c-low-bg: #eceef1;
+    --c-excluded: #b42318; --c-excluded-bg: #fde4e1;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1013; --surface: #17191e; --text: #ecedf0; --muted: #9a9fab; --line: #2a2d35;
+      --accent: #7d97ff; --accent-soft: #1d2440;
+      --c-excellent: #4cc99a; --c-excellent-bg: #12291f;
+      --c-strong: #8fd16a; --c-strong-bg: #1a2814;
+      --c-medium: #e7b54f; --c-medium-bg: #2c2312;
+      --c-low: #a5aab5; --c-low-bg: #23262d;
+      --c-excluded: #f2877d; --c-excluded-bg: #331614;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1013; --surface: #17191e; --text: #ecedf0; --muted: #9a9fab; --line: #2a2d35;
+    --accent: #7d97ff; --accent-soft: #1d2440;
+    --c-excellent: #4cc99a; --c-excellent-bg: #12291f; --c-strong: #8fd16a; --c-strong-bg: #1a2814;
+    --c-medium: #e7b54f; --c-medium-bg: #2c2312; --c-low: #a5aab5; --c-low-bg: #23262d;
+    --c-excluded: #f2877d; --c-excluded-bg: #331614;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.55 Inter, system-ui, sans-serif; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+  .top { padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .top .wrap { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .back { font-size: 14px; }
+  .note { font: 500 12px var(--mono); color: var(--muted); }
+  h1 { font-size: clamp(26px, 4vw, 34px); margin: 28px 0 6px; letter-spacing: -.02em; }
+  .lead-in { color: var(--muted); max-width: 760px; margin: 0 0 8px; }
+  .disclaimer { display: inline-block; font-size: 13px; padding: 6px 10px; border-radius: 6px; background: var(--c-medium-bg); color: var(--c-medium); margin: 6px 0 24px; }
+
+  .layout { display: grid; grid-template-columns: 320px 1fr; gap: 18px; align-items: start; padding-bottom: 48px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .card h2 { font-size: 16px; margin: 0 0 4px; }
+  .card .sub { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font: 500 11px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .field input { width: 100%; font: inherit; font-size: 14px; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; }
+  .field input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .group { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
+  .group-title { font-weight: 600; font-size: 14px; margin: 0 0 8px; }
+  .hint { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn { font: 600 13.5px Inter, sans-serif; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn:hover { filter: brightness(1.05); }
+  .stats { display: flex; gap: 6px; flex-wrap: wrap; }
+  .stat { font: 500 12px var(--mono); padding: 5px 8px; border-radius: 6px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; font: 500 11px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  td { padding: 11px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover, tbody tr.sel { background: var(--accent-soft); }
+  .co { font-weight: 600; }
+  .co small { display: block; font-weight: 400; color: var(--muted); font-size: 12.5px; }
+  .score { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+  .score b { font: 600 15px var(--mono); width: 30px; text-align: right; }
+  .bar { flex: 1; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 3px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; white-space: nowrap; }
+  .ai-dot { font: 500 10px var(--mono); color: var(--accent); margin-left: 6px; }
+
+  .detail { margin-top: 18px; }
+  .detail h3 { font-size: 20px; margin: 0; }
+  .detail .meta { color: var(--muted); font-size: 13.5px; margin: 2px 0 14px; }
+  .breakdown { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; }
+  .bk { border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+  .bk .k { font: 500 10.5px var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .bk .v { font-size: 13px; margin: 3px 0; min-height: 20px; overflow-wrap: anywhere; }
+  .bk .p { font: 600 14px var(--mono); }
+  .pos { color: var(--c-excellent); } .neg { color: var(--c-excluded); } .zero { color: var(--muted); }
+  .formula { font: 13px var(--mono); color: var(--muted); margin: 0 0 16px; overflow-wrap: anywhere; }
+  .ai { border: 1px solid var(--accent); border-radius: 10px; padding: 16px; background: var(--accent-soft); }
+  .ai-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; margin-bottom: 10px; }
+  .ai-head strong { font-size: 15px; }
+  .ai-head span { font: 500 11.5px var(--mono); color: var(--muted); }
+  .ai h4 { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 12px 0 4px; }
+  .ai ul { margin: 0; padding-left: 18px; }
+  .ai p { margin: 0; }
+  .hooks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .hook { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font-size: 13.5px; }
+  .hook b { display: block; font: 500 11px var(--mono); text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .adj { font: 600 14px var(--mono); }
+  .empty { color: var(--muted); font-size: 14px; }
+  .how { font-size: 13.5px; color: var(--muted); margin-top: 14px; }
+  .how code { font-family: var(--mono); font-size: 12.5px; }
+  input[type=file] { display: none; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .layout > section { order: -1; }
+    .breakdown { grid-template-columns: repeat(2, 1fr); }
+    .hooks { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    thead { display: none; }
+    table, tbody, tr, td { display: block; width: 100%; }
+    tbody tr { border-bottom: 1px solid var(--line); padding: 10px 4px; display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; }
+    td { border: 0; padding: 0; }
+    td.c-score { grid-column: 1 / -1; }
+    td.c-action { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="wrap">
+    <a class="back" href="../../">← Retour au portfolio d'Aymeric Frelaut</a>
+    <span class="note">AimLeads · démo figée, sans appel API</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <h1>AimLeads : quel lead appeler en premier ?</h1>
+  <p class="lead-in">Modifiez le profil de client idéal (ICP) à gauche : chaque lead est rescoré instantanément de 0 à 100, avec une action recommandée. Cliquez sur un lead pour voir le détail du calcul et l'enrichissement IA. Vous pouvez aussi importer votre propre CSV.</p>
+  <span class="disclaimer">Entreprises fictives. Le scoring applique les mêmes règles que le code de production, vérifiées avec ses cas de test. Les enrichissements IA affichés sont des exemples figés.</span>
+
+  <div class="layout">
+    <aside class="card" aria-label="Profil de client idéal">
+      <h2>Profil de client idéal</h2>
+      <p class="sub">Exemple : un éditeur SaaS cyber qui vise les DSI et RSSI d'ETI françaises. Séparez les valeurs par des virgules.</p>
+
+      <div class="group-title">Secteur</div>
+      <div class="field"><label for="ind-p">Primaires · +30</label><input id="ind-p" data-k="ind-p"></div>
+      <div class="field"><label for="ind-s">Secondaires · +15</label><input id="ind-s" data-k="ind-s"></div>
+      <div class="field"><label for="ind-x">Exclus · lead bloqué</label><input id="ind-x" data-k="ind-x"></div>
+
+      <div class="group">
+        <div class="group-title">Poste du contact</div>
+        <div class="field"><label for="rol-p">Cibles exactes · +25</label><input id="rol-p" data-k="rol-p"></div>
+        <div class="field"><label for="rol-s">Postes proches · +10</label><input id="rol-s" data-k="rol-s"></div>
+        <div class="field"><label for="rol-x">Exclus · lead bloqué</label><input id="rol-x" data-k="rol-x"></div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">Taille (salariés)</div>
+        <div class="row2">
+          <div class="field"><label for="sz-pmin">Idéal min</label><input id="sz-pmin" data-k="sz-pmin" inputmode="numeric"></div>
+          <div class="field"><label for="sz-pmax">Idéal max</label><input id="sz-pmax" data-k="sz-pmax" inputmode="numeric"></div>
+          <div class="field"><label for="sz-smin">Correct min</label><input id="sz-smin" data-k="sz-smin" inputmode="numeric"></div>
+          <div class="field"><label for="sz-smax">Correct max</label><input id="sz-smax" data-k="sz-smax" inputmode="numeric"></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">Pays et type de client</div>
+        <div class="row2">
+          <div class="field"><label for="geo-p">Pays idéal</label><input id="geo-p" data-k="geo-p"></div>
+          <div class="field"><label for="geo-s">Pays correct</label><input id="geo-s" data-k="geo-s"></div>
+          <div class="field"><label for="typ-p">Type idéal</label><input id="typ-p" data-k="typ-p"></div>
+          <div class="field"><label for="typ-s">Type correct</label><input id="typ-s" data-k="typ-s"></div>
+        </div>
+      </div>
+      <button class="btn" id="reset" type="button">Revenir à l'exemple</button>
+    </aside>
+
+    <section>
+      <div class="card">
+        <div class="toolbar">
+          <div class="stats" id="stats"></div>
+          <div class="btns">
+            <button class="btn primary" id="import" type="button">Importer un CSV</button>
+            <button class="btn" id="sample" type="button">CSV d'exemple</button>
+            <input type="file" id="file" accept=".csv,text/csv">
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Entreprise</th><th>Contact</th><th>Score</th><th>Catégorie</th><th>Action recommandée</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <p class="hint" id="import-msg"></p>
+      </div>
+
+      <div class="card detail" id="detail" aria-live="polite"></div>
+
+      <p class="how">Comment ça marche : chaque critère rapporte ou retire des points (secteur, poste, type de client, taille, pays). Le total brut, plafonné entre −100 et 110, est ramené sur 100. Un secteur ou un poste exclu bloque le lead. En production, l'IA (Claude, avec recherche web) ajuste ensuite le score, de ±8 points au maximum si elle est confiante et de ±4 sinon, puis rédige les accroches. Code source : <a href="https://github.com/Aimlead/Aimlead-v2" target="_blank" rel="noopener">github.com/Aimlead/Aimlead-v2</a>.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+// Moteur de scoring porté à l'identique depuis src/lib/scoring/engine.ts (AimLeads v2).
+const W = {
+  industrie: { parfait: 30, partiel: 15, aucun: -30, exclu: -100 },
+  roles: { parfait: 25, partiel: 10, aucun: -25, exclu: -100 },
+  typeClient: { parfait: 25, partiel: 10, aucun: -40, exclu: -100 },
+  structure: { parfait: 15, partiel: 10, aucun: -20, exclu: -100 },
+  geo: { parfait: 15, partiel: 5, aucun: -10, exclu: -100 },
+};
+const LIM = { maxRaw: 110, minRaw: -100 };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const norm = v => String(v ?? '').trim().toLowerCase();
+const inExact = (list = [], v) => { const n = norm(v); return !!n && list.some(e => norm(e) === n); };
+const inPartial = (list = [], v) => {
+  const n = norm(v); if (!n) return false;
+  return list.some(e => { const x = norm(e); if (!x) return false;
+    const esc = x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(?:^|\\s)${esc}(?:\\s|$)`).test(n); });
+};
+const normalize = r => r <= LIM.minRaw ? 0 : r >= 0 ? clamp(Math.round(r / LIM.maxRaw * 100), 0, 100) : clamp(Math.round(20 + r / 5), 0, 100);
+const category = s => s >= 80 ? 'excellent' : s >= 50 ? 'strong' : s >= 20 ? 'medium' : 'low';
+const ACTION = { excellent: 'reach_out_now', strong: 'contact_48h', medium: 'nurture', low: 'reject', excluded: 'block' };
+
+function scoreLead(lead, w) {
+  let raw = 0, early = false; const d = {};
+  const finish = () => { const c = clamp(raw, LIM.minRaw, LIM.maxRaw); const s = early ? 0 : normalize(c);
+    const cat = early ? 'excluded' : category(s); return { rawScore: c, icpScore: s, category: cat, action: ACTION[cat], earlyExit: early, details: d }; };
+  const set = (sec, m, pts, val) => { d[sec] = { match: m, points: pts, value: val }; };
+  if (w.industrie) {
+    const { primaires = [], secondaires = [], exclusions = [] } = w.industrie; const S = W.industrie;
+    if (inExact(exclusions, lead.industry)) { raw = S.exclu; set('industrie', 'exclu', S.exclu, lead.industry); early = true; return finish(); }
+    if (!primaires.length && !secondaires.length) { if (lead.industry) { raw += S.parfait; set('industrie', 'parfait', S.parfait, lead.industry); } }
+    else if (inExact(primaires, lead.industry)) { raw += S.parfait; set('industrie', 'parfait', S.parfait, lead.industry); }
+    else if (inExact(secondaires, lead.industry)) { raw += S.partiel; set('industrie', 'partiel', S.partiel, lead.industry); }
+    else if (lead.industry) { raw += S.aucun; set('industrie', 'aucun', S.aucun, lead.industry); }
+  }
+  if (w.roles && lead.contact_role) {
+    const { exacts = [], proches = [], exclusions = [] } = w.roles; const S = W.roles;
+    if (inPartial(exclusions, lead.contact_role)) { raw = S.exclu; set('roles', 'exclu', S.exclu, lead.contact_role); early = true; return finish(); }
+    if (inPartial(exacts, lead.contact_role)) { raw += S.parfait; set('roles', 'parfait', S.parfait, lead.contact_role); }
+    else if (inPartial(proches, lead.contact_role)) { raw += S.partiel; set('roles', 'partiel', S.partiel, lead.contact_role); }
+    else { raw += S.aucun; set('roles', 'aucun', S.aucun, lead.contact_role); }
+  }
+  if (w.typeClient && lead.client_type) {
+    const { primaire = [], secondaire = [] } = w.typeClient; const S = W.typeClient;
+    if (inExact(primaire, lead.client_type)) { raw += S.parfait; set('typeClient', 'parfait', S.parfait, lead.client_type); }
+    else if (inExact(secondaire, lead.client_type)) { raw += S.partiel; set('typeClient', 'partiel', S.partiel, lead.client_type); }
+    else { raw += S.aucun; set('typeClient', 'aucun', S.aucun, lead.client_type); }
+  }
+  if (w.structure && lead.company_size != null && lead.company_size !== '') {
+    const { primaire, secondaire } = w.structure; const S = W.structure; const n = Number(lead.company_size);
+    if (Number.isFinite(n) && n >= (primaire?.min ?? 0) && n <= (primaire?.max ?? 999999)) { raw += S.parfait; set('structure', 'parfait', S.parfait, n); }
+    else if (Number.isFinite(n) && n >= (secondaire?.min ?? 0) && n <= (secondaire?.max ?? 999999)) { raw += S.partiel; set('structure', 'partiel', S.partiel, n); }
+    else { raw += S.aucun; set('structure', 'aucun', S.aucun, n); }
+  }
+  if (w.geo && lead.country) {
+    const { primaire = [], secondaire = [] } = w.geo; const S = W.geo;
+    if (inExact(primaire, lead.country)) { raw += S.parfait; set('geo', 'parfait', S.parfait, lead.country); }
+    else if (inExact(secondaire, lead.country)) { raw += S.partiel; set('geo', 'partiel', S.partiel, lead.country); }
+    else { raw += S.aucun; set('geo', 'aucun', S.aucun, lead.country); }
+  }
+  return finish();
+}
+function applyAiAdjustment(score, adj, conf) {
+  const r = Math.round(Number(adj) || 0); const b = conf >= 60 ? clamp(r, -8, 8) : clamp(r, -4, 4);
+  return clamp(score + b, 0, 100);
+}
+
+// Libellés repris de src/lib/scoring/presentation.ts
+const CAT_LABEL = { excellent: 'Excellent', strong: 'Fort potentiel', medium: 'Potentiel moyen', low: 'Faible', excluded: 'Exclu' };
+const ACT_LABEL = { reach_out_now: 'Contacter maintenant', contact_48h: 'Contacter sous 48h', nurture: 'Séquence de nurturing', reject: 'Écarter le lead', block: 'Bloquer le lead' };
+const SEC_LABEL = { industrie: 'Secteur', roles: 'Poste', typeClient: 'Type client', structure: 'Taille', geo: 'Pays' };
+
+const DEFAULT_ICP = {
+  'ind-p': 'Industrie, Services / ESN, SaaS', 'ind-s': 'Retail, Santé', 'ind-x': 'Secteur public',
+  'rol-p': 'DSI, RSSI, CISO, CTO', 'rol-s': 'Responsable IT, IT Manager, Directeur technique', 'rol-x': 'Stagiaire, Alternant',
+  'sz-pmin': '200', 'sz-pmax': '2000', 'sz-smin': '50', 'sz-smax': '199',
+  'geo-p': 'France', 'geo-s': 'Belgique, Suisse', 'typ-p': 'B2B', 'typ-s': 'B2B2C',
+};
+
+const SAMPLE = [
+  { id: 1, company_name: 'Vorlane Industries', industry: 'Industrie', country: 'France', company_size: 640, client_type: 'B2B', contact_name: 'Claire Morvan', contact_role: 'RSSI' },
+  { id: 2, company_name: 'Nexaro Conseil', industry: 'Services / ESN', country: 'France', company_size: 320, client_type: 'B2B', contact_name: 'Julien Arnaud', contact_role: 'DSI' },
+  { id: 3, company_name: 'Quillon Santé', industry: 'Santé', country: 'France', company_size: 900, client_type: 'B2B', contact_name: 'Sarah Benali', contact_role: 'Responsable IT' },
+  { id: 4, company_name: 'Opaline Logiciels', industry: 'SaaS', country: 'France', company_size: 85, client_type: 'B2B', contact_name: 'Hugo Lemaire', contact_role: 'CTO & co-fondateur' },
+  { id: 5, company_name: 'Brivane Retail', industry: 'Retail', country: 'Belgique', company_size: 150, client_type: 'B2B2C', contact_name: 'Inès Vermeulen', contact_role: 'IT Manager' },
+  { id: 6, company_name: 'Kovalt Énergie', industry: 'Industrie', country: 'Suisse', company_size: 2400, client_type: 'B2B', contact_name: 'Marc Keller', contact_role: 'Directeur technique' },
+  { id: 7, company_name: 'Lumen Assurances', industry: 'Finance', country: 'France', company_size: 1200, client_type: 'B2B', contact_name: 'Nadia Roche', contact_role: 'DSI' },
+  { id: 8, company_name: 'Sterna Logistique', industry: 'Industrie', country: 'France', company_size: 450, client_type: 'B2B', contact_name: 'Tom Girard', contact_role: 'Stagiaire IT' },
+  { id: 9, company_name: 'Mairie de Valcourt', industry: 'Secteur public', country: 'France', company_size: 300, client_type: 'B2C', contact_name: 'Paul Fabre', contact_role: 'DSI' },
+  { id: 10, company_name: 'Atelier Ferrand', industry: 'Artisanat', country: 'France', company_size: 12, client_type: 'B2C', contact_name: 'Luc Ferrand', contact_role: 'Gérant' },
+];
+
+// Exemples figés au format exact de l'outil analyze_lead (src/lib/ai/enrichLead.ts).
+const ENRICH = {
+  'Vorlane Industries': { score_adjustment: 6, confidence_level: 78,
+    buying_signals: ['Recrute un ingénieur sécurité et un analyste SOC en France (offres publiées ce mois-ci)', 'Nouvelle usine annoncée à Lyon pour 2027 : extension du parc informatique'],
+    fit_reasoning: "Fit fort : industriel de 640 salariés en France, contact RSSI, exactement la cible. La croissance du site industriel augmente la surface d'attaque.",
+    risk_factors: ['Budget sécurité probablement arbitré en fin d\'année'],
+    icebreaker_email: "Bonjour Claire, j'ai vu que Vorlane recrute un analyste SOC en même temps que le projet d'usine à Lyon. Deux chantiers qui font souvent grossir le risque lié aux emails piégés chez les équipes terrain. Nous aidons des industriels de votre taille à former ces équipes sans alourdir le travail de l'IT. Un échange de 20 minutes la semaine prochaine ?",
+    icebreaker_linkedin: "Bonjour Claire, entre le recrutement SOC et la future usine de Lyon, 2026 s'annonce chargée côté sécurité chez Vorlane. Ouverte à un échange rapide ?",
+    icebreaker_call: "Bonjour Claire, je vous appelle au sujet de la future usine de Lyon : comment prévoyez-vous de sensibiliser les nouvelles équipes au phishing ?",
+    suggested_action: "Appeler aujourd'hui, puis email de suivi avec un cas client industriel." },
+  'Quillon Santé': { score_adjustment: 5, confidence_level: 70,
+    buying_signals: ['Incident de messagerie mentionné dans la presse régionale au printemps', 'Projet de certification HDS en cours d\'après le site carrières'],
+    fit_reasoning: "Fit moyen à fort : secteur secondaire et contact Responsable IT plutôt que RSSI, mais un incident récent et un projet de certification créent l'urgence.",
+    risk_factors: ['Le décideur final est sans doute le DSI groupe', 'Cycle d\'achat plus long dans la santé'],
+    icebreaker_email: "Bonjour Sarah, la certification HDS que prépare Quillon passe aussi par la sensibilisation des équipes aux emails frauduleux. Nous proposons un parcours court, mesurable et adapté au personnel soignant comme administratif. Pouvons-nous en parler 20 minutes ?",
+    icebreaker_linkedin: "Bonjour Sarah, j'ai vu le projet HDS chez Quillon. Le volet sensibilisation des équipes est souvent le plus long : je serais ravi d'en discuter.",
+    icebreaker_call: "Bonjour Sarah, dans le cadre de votre projet HDS, qui pilote la sensibilisation des équipes au phishing ?",
+    suggested_action: "Contacter sous 48h et demander qui est le décideur côté DSI groupe." },
+  'Brivane Retail': { score_adjustment: -6, confidence_level: 45,
+    buying_signals: [],
+    fit_reasoning: "Fit faible à moyen : retail belge de 150 salariés en B2B2C. Peu d'informations publiques sur la sécurité, aucun signal d'achat trouvé.",
+    risk_factors: ['Taille en dessous de la cible idéale', 'Aucun signal récent : risque de prospection à froid'],
+    icebreaker_email: "Bonjour Inès, je m'intéresse aux enseignes qui ouvrent de nouveaux points de vente en Belgique. Comment gérez-vous aujourd'hui la sensibilisation sécurité des équipes en magasin ?",
+    icebreaker_linkedin: "Bonjour Inès, curieux de savoir comment Brivane aborde la sécurité des équipes en magasin. Ouverte à un échange ?",
+    icebreaker_call: "Bonjour Inès, je vous appelle pour comprendre comment vos équipes en magasin sont formées aux risques liés aux emails.",
+    suggested_action: "Mettre en séquence de nurturing, sans appel pour l'instant." },
+};
+
+const $ = id => document.getElementById(id);
+const list = s => String(s || '').split(',').map(x => x.trim()).filter(Boolean);
+const num = s => { const n = parseInt(String(s).replace(/\s/g, ''), 10); return Number.isFinite(n) ? n : undefined; };
+let leads = SAMPLE.slice(), selected = 'Vorlane Industries';
+
+function readIcp() {
+  const v = k => $(k).value;
+  return {
+    industrie: { primaires: list(v('ind-p')), secondaires: list(v('ind-s')), exclusions: list(v('ind-x')) },
+    roles: { exacts: list(v('rol-p')), proches: list(v('rol-s')), exclusions: list(v('rol-x')) },
+    typeClient: { primaire: list(v('typ-p')), secondaire: list(v('typ-s')) },
+    structure: { primaire: { min: num(v('sz-pmin')), max: num(v('sz-pmax')) }, secondaire: { min: num(v('sz-smin')), max: num(v('sz-smax')) } },
+    geo: { primaire: list(v('geo-p')), secondaire: list(v('geo-s')) },
+  };
+}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const badge = c => `<span class="badge" style="color:var(--c-${c});background:var(--c-${c}-bg)">${CAT_LABEL[c]}</span>`;
+
+function computed() {
+  const icp = readIcp();
+  return leads.map(l => {
+    const r = scoreLead(l, icp); const e = ENRICH[l.company_name];
+    const final = e && !r.earlyExit ? applyAiAdjustment(r.icpScore, e.score_adjustment, e.confidence_level) : r.icpScore;
+    const cat = r.earlyExit ? 'excluded' : category(final);
+    return { lead: l, r, e, final, cat };
+  }).sort((a, b) => (a.cat === 'excluded') - (b.cat === 'excluded') || b.final - a.final);
+}
+
+function render() {
+  const rows = computed();
+  const counts = rows.reduce((m, x) => (m[x.cat] = (m[x.cat] || 0) + 1, m), {});
+  $('stats').innerHTML = ['excellent', 'strong', 'medium', 'low', 'excluded'].filter(c => counts[c])
+    .map(c => `<span class="stat" style="color:var(--c-${c});background:var(--c-${c}-bg)">${counts[c]} ${CAT_LABEL[c].toLowerCase()}</span>`).join('');
+  $('rows').innerHTML = rows.map(x => `
+    <tr data-name="${esc(x.lead.company_name)}" class="${x.lead.company_name === selected ? 'sel' : ''}" tabindex="0">
+      <td class="co">${esc(x.lead.company_name)}${x.e && !x.r.earlyExit ? '<span class="ai-dot">IA</span>' : ''}<small>${esc(x.lead.industry || '')}${x.lead.company_size ? ' · ' + esc(x.lead.company_size) + ' sal.' : ''}${x.lead.country ? ' · ' + esc(x.lead.country) : ''}</small></td>
+      <td class="co" style="font-weight:500">${esc(x.lead.contact_role || '')}<small>${esc(x.lead.contact_name || '')}</small></td>
+      <td class="c-score"><div class="score"><b>${x.final}</b><span class="bar"><i style="width:${x.final}%;background:var(--c-${x.cat})"></i></span></div></td>
+      <td>${badge(x.cat)}</td>
+      <td class="c-action">${ACT_LABEL[ACTION[x.cat]]}</td>
+    </tr>`).join('');
+  const cur = rows.find(x => x.lead.company_name === selected) || rows[0];
+  if (cur) { selected = cur.lead.company_name; renderDetail(cur); }
+}
+
+function renderDetail(x) {
+  const { lead, r, e } = x;
+  const secs = ['industrie', 'roles', 'typeClient', 'structure', 'geo'];
+  const bks = secs.map(s => { const d = r.details[s];
+    const p = d ? d.points : null; const cls = p == null ? 'zero' : p > 0 ? 'pos' : p < 0 ? 'neg' : 'zero';
+    return `<div class="bk"><div class="k">${SEC_LABEL[s]}</div><div class="v">${d ? esc(d.value) : '<span class="zero">non évalué</span>'}</div><div class="p ${cls}">${p == null ? '·' : (p > 0 ? '+' : '') + p}${d ? ' · ' + d.match : ''}</div></div>`; }).join('');
+  let formula = r.earlyExit
+    ? `Critère exclu : lead bloqué, score 0.`
+    : `Total brut ${r.rawScore} → score ICP ${r.icpScore}/100`;
+  if (e && !r.earlyExit) {
+    const bound = e.confidence_level >= 60 ? 8 : 4;
+    formula += ` · ajustement IA ${e.score_adjustment > 0 ? '+' : ''}${e.score_adjustment} (borné à ±${bound}, confiance ${e.confidence_level}) → score final ${x.final}/100`;
+  }
+  let ai;
+  if (r.earlyExit) ai = `<p class="empty">Lead bloqué par une règle d'exclusion : aucun crédit IA n'est dépensé.</p>`;
+  else if (e) ai = `<div class="ai">
+      <div class="ai-head"><strong>Enrichissement IA</strong><span>exemple figé · généré en production par Claude + recherche web</span></div>
+      <p>${esc(e.fit_reasoning)}</p>
+      <h4>Signaux d'achat</h4>${e.buying_signals.length ? '<ul>' + e.buying_signals.map(s => `<li>${esc(s)}</li>`).join('') + '</ul>' : '<p class="empty">Aucun signal trouvé.</p>'}
+      ${e.risk_factors.length ? '<h4>Risques à anticiper</h4><ul>' + e.risk_factors.map(s => `<li>${esc(s)}</li>`).join('') + '</ul>' : ''}
+      <h4>Accroches personnalisées</h4>
+      <div class="hooks"><div class="hook"><b>Email</b>${esc(e.icebreaker_email)}</div><div class="hook"><b>LinkedIn</b>${esc(e.icebreaker_linkedin)}</div><div class="hook"><b>Appel</b>${esc(e.icebreaker_call)}</div></div>
+      <h4>Prochaine action</h4><p>${esc(e.suggested_action)}</p>
+    </div>`;
+  else ai = `<p class="empty">Enrichissement IA non pré-calculé pour ce lead dans la démo. Essayez Vorlane Industries, Quillon Santé ou Brivane Retail.</p>`;
+  $('detail').innerHTML = `
+    <h3>${esc(lead.company_name)} ${badge(x.cat)}</h3>
+    <p class="meta">${esc(lead.contact_name || '')}${lead.contact_role ? ' · ' + esc(lead.contact_role) : ''} · Action : <strong>${ACT_LABEL[ACTION[x.cat]]}</strong></p>
+    <div class="breakdown">${bks}</div>
+    <p class="formula">${formula}</p>
+    ${ai}`;
+}
+
+// Import CSV : détection des colonnes par nom, comme CsvImporter (FR ou EN).
+const COLS = {
+  company_name: ['company_name', 'company', 'entreprise', 'société', 'societe', 'nom'],
+  industry: ['industry', 'secteur', 'industrie'],
+  country: ['country', 'pays'],
+  company_size: ['company_size', 'size', 'taille', 'effectif', 'salariés', 'salaries', 'employees'],
+  client_type: ['client_type', 'type', 'type client', 'type_client'],
+  contact_name: ['contact_name', 'contact', 'nom contact', 'name'],
+  contact_role: ['contact_role', 'role', 'rôle', 'poste', 'title', 'fonction'],
+};
+function parseCsv(text) {
+  const first = text.split(/\r?\n/)[0] || '';
+  const sep = (first.match(/;/g) || []).length > (first.match(/,/g) || []).length ? ';' : ',';
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; } else if (c === '"') q = false; else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === sep) { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim()));
+}
+function importCsv(text) {
+  const rows = parseCsv(text); if (rows.length < 2) throw new Error('Fichier vide ou sans ligne de données.');
+  const head = rows[0].map(h => norm(h));
+  const idx = {}; for (const [k, names] of Object.entries(COLS)) { const i = head.findIndex(h => names.includes(h)); if (i >= 0) idx[k] = i; }
+  if (idx.company_name == null) throw new Error("Colonne entreprise introuvable (company_name, entreprise ou société).");
+  const out = rows.slice(1, 1001).map((r, n) => { const l = { id: 'csv' + n };
+    for (const [k, i] of Object.entries(idx)) l[k] = (r[i] || '').trim();
+    l.company_size = l.company_size ? num(l.company_size) : null; return l; }).filter(l => l.company_name);
+  return { leads: out, mapped: Object.keys(idx).length, truncated: rows.length - 1 > 1000 };
+}
+function sampleCsv() {
+  const h = ['company_name', 'industry', 'country', 'company_size', 'client_type', 'contact_name', 'contact_role'];
+  const q = v => /[",;\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v;
+  const body = [h.join(',')].concat(SAMPLE.map(l => h.map(k => q(l[k] ?? '')).join(','))).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([body], { type: 'text/csv' }));
+  a.download = 'aimleads-exemple.csv'; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function fill(icp) { for (const [k, v] of Object.entries(icp)) $(k).value = v; }
+fill(DEFAULT_ICP);
+document.querySelectorAll('aside input').forEach(i => i.addEventListener('input', render));
+$('reset').onclick = () => { fill(DEFAULT_ICP); leads = SAMPLE.slice(); selected = 'Vorlane Industries'; $('import-msg').textContent = ''; render(); };
+$('rows').addEventListener('click', ev => { const tr = ev.target.closest('tr'); if (tr) { selected = tr.dataset.name; render(); if (innerWidth < 900) $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+$('rows').addEventListener('keydown', ev => { if (ev.key === 'Enter') ev.target.closest('tr')?.click(); });
+$('import').onclick = () => $('file').click();
+$('sample').onclick = sampleCsv;
+$('file').onchange = async ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  try { const res = importCsv(await f.text()); leads = res.leads; selected = '';
+    $('import-msg').textContent = `${res.leads.length} leads importés, ${res.mapped} colonnes reconnues${res.truncated ? ' (limité à 1 000 lignes, comme en production)' : ''}. Rien n'est envoyé : tout est calculé dans votre navigateur.`;
+    render();
+  } catch (e) { $('import-msg').textContent = e.message; }
+  ev.target.value = '';
+};
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aymeric Frelaut · Sales Ops · CRM · Adoption de l'IA</title>
+<meta name="description" content="Sales Ops, CRM, automatisation et IA appliquée. 200+ rendez-vous qualifiés en SaaS B2B, HubSpot structuré, deux produits conçus et mis en ligne seul. Disponible immédiatement en CDI.">
+<link rel="canonical" href="https://afrelaut.github.io/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://afrelaut.github.io/">
+<meta property="og:title" content="Aymeric Frelaut · Sales Ops · CRM · Adoption de l'IA">
+<meta property="og:description" content="200+ RDV qualifiés avec des DSI et RSSI en SaaS B2B, base de 8 000+ prospects. HubSpot, automatisation, IA, et deux produits construits seul.">
+<meta property="og:image" content="https://afrelaut.github.io/img/og.png">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f5bff'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='700' font-size='15' fill='white' text-anchor='middle'%3EAF%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Person","name":"Aymeric Frelaut","jobTitle":"Sales Ops · CRM · Adoption de l'IA","email":"mailto:afrelaut@gmail.com","url":"https://afrelaut.github.io/","sameAs":["https://www.linkedin.com/in/aymeric-frelaut-687909192","https://github.com/afrelaut"],"alumniOf":"EM Normandie","address":{"@type":"PostalAddress","addressLocality":"Colombes","addressCountry":"FR"}}
+</script>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --surface: #ffffff;
+    --text: #15161a;
+    --muted: #5c606b;
+    --line: #e3e4e8;
+    --accent: #2f5bff;
+    --accent-soft: #e8edff;
+    --real: #12805c;
+    --real-soft: #e3f4ec;
+    --wait: #8a5a00;
+    --wait-soft: #fbf0d9;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1013; --surface: #17191e; --text: #ecedf0; --muted: #9a9fab; --line: #2a2d35;
+      --accent: #7d97ff; --accent-soft: #1d2440; --real: #4cc99a; --real-soft: #13291f; --wait: #e7b54f; --wait-soft: #2c2312;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1013; --surface: #17191e; --text: #ecedf0; --muted: #9a9fab; --line: #2a2d35;
+    --accent: #7d97ff; --accent-soft: #1d2440; --real: #4cc99a; --real-soft: #13291f; --wait: #e7b54f; --wait-soft: #2c2312;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 Inter, system-ui, -apple-system, sans-serif; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  .kicker { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  .kicker .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--real); box-shadow: 0 0 0 3px var(--real-soft); }
+
+  nav.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  nav.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 52px; gap: 12px; }
+  nav.top .me { font-weight: 700; color: var(--text); white-space: nowrap; }
+  nav.top ul { display: flex; gap: 18px; list-style: none; margin: 0; padding: 0; font-size: 14px; }
+  nav.top ul a { color: var(--muted); }
+  nav.top ul a:hover { color: var(--text); text-decoration: none; }
+
+  header { padding: 56px 0 40px; border-bottom: 1px solid var(--line); }
+  h1 { font-size: clamp(34px, 6vw, 50px); line-height: 1.08; margin: 0 0 10px; letter-spacing: -.02em; }
+  .role { font: 500 clamp(15px, 2.4vw, 18px)/1.4 var(--mono); color: var(--accent); margin: 0 0 20px; }
+  .intro { font-size: 18px; max-width: 700px; margin: 0 0 26px; }
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 0 0 22px; }
+  .metric { background: var(--surface); padding: 16px 16px 14px; }
+  .metric b { display: block; font-size: 26px; line-height: 1.1; letter-spacing: -.02em; color: var(--accent); }
+  .metric span { display: block; font-size: 13.5px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+  .seek { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 24px; padding: 0; list-style: none; }
+  .seek li { font-size: 14px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+  .seek li strong { font-weight: 600; }
+  .cta { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 8px; font-weight: 600; font-size: 15px; border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn:hover { text-decoration: none; filter: brightness(1.05); }
+
+  section { padding: 52px 0; border-bottom: 1px solid var(--line); scroll-margin-top: 52px; }
+  h2 { font-size: 25px; margin: 0 0 8px; letter-spacing: -.01em; }
+  .h2-sub { color: var(--muted); margin: 0 0 24px; }
+
+  .skills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .skill { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
+  .skill .num { font: 500 12px var(--mono); color: var(--accent); }
+  .skill h3 { font-size: 17px; margin: 6px 0 10px; }
+  .skill ul { margin: 0 0 16px; padding-left: 18px; color: var(--muted); font-size: 14.5px; flex: 1; }
+  .skill li { margin-bottom: 5px; }
+  .skill li strong { color: var(--text); font-weight: 600; }
+  .tools { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tool { font: 12px/1 var(--mono); padding: 5px 8px; border-radius: 6px; background: var(--accent-soft); color: var(--text); }
+
+  .proof { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+  .proof-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; margin-bottom: 4px; }
+  .proof h3 { font-size: 22px; margin: 0; }
+  .tag { font: 500 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 6px 9px; border-radius: 6px; white-space: nowrap; }
+  .tag.real { background: var(--real-soft); color: var(--real); }
+  .tag.wait { background: var(--wait-soft); color: var(--wait); }
+  .meta { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+  .pdr { display: grid; grid-template-columns: 150px 1fr; gap: 12px 20px; margin: 0; }
+  .pdr dt { font: 500 12px/1.9 var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .pdr dd { margin: 0; }
+  .pdr ul { margin: 0; padding-left: 18px; }
+  .pdr li { margin-bottom: 5px; }
+  .results { display: flex; flex-wrap: wrap; gap: 10px 28px; }
+  .results div { line-height: 1.3; }
+  .results b { display: block; font-size: 26px; color: var(--accent); letter-spacing: -.01em; }
+  .results span { font-size: 14px; color: var(--muted); }
+  .result-text { font-weight: 600; }
+  .proof .tools { margin-top: 20px; }
+  .links { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .links a { font-size: 14px; font-weight: 600; padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); }
+  .links a.go { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .links a:hover { text-decoration: none; filter: brightness(1.05); }
+
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; }
+  .shots figure { margin: 0; }
+  .shots .wide { grid-column: 1 / -1; }
+  .shots button { display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); cursor: zoom-in; }
+  .shots img { width: 100%; height: auto; display: block; }
+  .shots figcaption { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+  .cv { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .cv-block { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  .cv-block h3 { font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 12px; }
+  .cv-block ol { list-style: none; margin: 0; padding: 0; }
+  .cv-block li { padding: 8px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 96px 1fr; gap: 12px; font-size: 14.5px; }
+  .cv-block li:first-child { border-top: 0; padding-top: 0; }
+  .cv-block .when { font: 12.5px/1.7 var(--mono); color: var(--muted); }
+  .cv-block .what strong { display: block; }
+  .cv-block .what span { color: var(--muted); }
+
+  .soon { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .soon div { border: 1px dashed var(--line); border-radius: 12px; padding: 18px; color: var(--muted); font-size: 15px; }
+  .soon strong { display: block; color: var(--text); margin-bottom: 4px; }
+
+  footer { padding: 52px 0 64px; }
+  footer p { color: var(--muted); font-size: 14px; margin: 18px 0 0; }
+
+  dialog.zoom { border: 0; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+  dialog.zoom::backdrop { background: rgba(8, 9, 12, .86); }
+  dialog.zoom img { display: block; max-width: 96vw; max-height: 88vh; width: auto; height: auto; border-radius: 8px; }
+  dialog.zoom p { color: #e6e7ea; font-size: 14px; text-align: center; margin: 10px 0 0; }
+  dialog.zoom .close { position: fixed; top: 14px; right: 16px; width: 42px; height: 42px; border-radius: 50%; border: 0; background: #fff; color: #111; font-size: 22px; cursor: pointer; }
+
+  @media (max-width: 820px) {
+    nav.top ul { display: none; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+    .skills, .soon, .cv { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    header { padding: 36px 0 32px; }
+    .intro { font-size: 17px; }
+    .metric b { font-size: 22px; }
+    .pdr { grid-template-columns: 1fr; gap: 2px; }
+    .pdr dd { margin-bottom: 14px; }
+    .proof { padding: 20px; }
+    .shots { grid-template-columns: 1fr; }
+    .cv-block li { grid-template-columns: 1fr; gap: 0; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="top" aria-label="Navigation">
+  <div class="wrap">
+    <a class="me" href="#">Aymeric Frelaut</a>
+    <ul>
+      <li><a href="#competences">Compétences</a></li>
+      <li><a href="#preuves">Preuves</a></li>
+      <li><a href="#parcours">Parcours</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a class="btn primary" style="padding:7px 14px;font-size:14px" href="mailto:afrelaut@gmail.com">Me contacter</a>
+  </div>
+</nav>
+
+<header>
+  <div class="wrap">
+    <p class="kicker"><span class="dot" aria-hidden="true"></span>Disponible immédiatement · CDI</p>
+    <h1>Aymeric Frelaut</h1>
+    <p class="role">Sales Ops · CRM · Adoption de l'IA</p>
+    <p class="intro">BDR et Sales Ops en SaaS B2B : je génère des rendez-vous, je structure le CRM et j'automatise le travail commercial avec l'IA. Je construis aussi mes propres outils, de l'idée à la mise en ligne.</p>
+    <div class="metrics">
+      <div class="metric"><b>200+</b><span>rendez-vous qualifiés avec des DSI et RSSI</span></div>
+      <div class="metric"><b>8 000+</b><span>prospects ciblés et enrichis</span></div>
+      <div class="metric"><b>179</b><span>tests automatisés sur mes 2 produits</span></div>
+      <div class="metric"><b>2</b><span>produits conçus et mis en ligne seul</span></div>
+    </div>
+    <ul class="seek">
+      <li><strong>Je cherche :</strong> un CDI en Sales Ops / RevOps, consultant CRM &amp; IA ou adoption de l'IA</li>
+      <li>Paris, hybride ou télétravail</li>
+    </ul>
+    <div class="cta">
+      <a class="btn primary" href="mailto:afrelaut@gmail.com">afrelaut@gmail.com</a>
+      <a class="btn" href="https://www.linkedin.com/in/aymeric-frelaut-687909192" target="_blank" rel="noopener">LinkedIn</a>
+      <a class="btn" href="demo/aimleads/">Essayer ma démo IA</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="competences">
+    <div class="wrap">
+      <h2>Ce que je sais faire</h2>
+      <p class="h2-sub">Trois blocs, du terrain commercial jusqu'à l'outil qui lui fait gagner du temps.</p>
+      <div class="skills">
+        <div class="skill">
+          <span class="num">01</span>
+          <h3>Vente, prospection et marketing</h3>
+          <ul>
+            <li><strong>Prospection outbound</strong> auprès de décideurs IT : téléphone, email, LinkedIn</li>
+            <li>Ciblage ICP, segmentation, construction et enrichissement de bases</li>
+            <li>Analyse des taux de réponse, de conversion et de présence</li>
+            <li><strong>Marketing</strong> : positionnement, étude de marché, offre, contenus et pages de vente</li>
+          </ul>
+          <div class="tools"><span class="tool">Apollo</span><span class="tool">Lusha</span><span class="tool">LinkedIn</span><span class="tool">Aircall</span><span class="tool">Scraping</span></div>
+        </div>
+        <div class="skill">
+          <span class="num">02</span>
+          <h3>CRM et automatisation</h3>
+          <ul>
+            <li><strong>HubSpot</strong> : propriétés, pipelines, workflows, séquences, dashboards</li>
+            <li>Qualité des données, lead scoring, reporting des KPI commerciaux</li>
+            <li>Traduire les besoins des commerciaux en champs, vues, rapports et process</li>
+            <li><strong>Automatisations</strong> reliées par API et webhooks</li>
+          </ul>
+          <div class="tools"><span class="tool">HubSpot</span><span class="tool">n8n</span><span class="tool">Make</span><span class="tool">Zapier</span><span class="tool">Google Workspace</span><span class="tool">Notion</span></div>
+        </div>
+        <div class="skill">
+          <span class="num">03</span>
+          <h3>IA appliquée et produit</h3>
+          <ul>
+            <li><strong>IA générative au quotidien</strong> : listes, emails, relances, analyses</li>
+            <li>Agents IA et prompt engineering : recherche web, sorties structurées</li>
+            <li><strong>Produits web de bout en bout</strong> avec l'IA : front, base de données, paiement, tests</li>
+          </ul>
+          <div class="tools"><span class="tool">Claude</span><span class="tool">ChatGPT / OpenAI</span><span class="tool">API Anthropic</span><span class="tool">Claude Code</span><span class="tool">React</span><span class="tool">Next.js</span><span class="tool">Supabase</span><span class="tool">Stripe</span><span class="tool">GitHub</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="preuves">
+    <div class="wrap">
+      <h2>Preuves</h2>
+      <p class="h2-sub">Le problème, ce que j'ai fait, le résultat. Tout ce qui suit est réel.</p>
+
+      <article class="proof">
+        <div class="proof-head">
+          <h3>Mantra (CyberGuru)</h3>
+          <span class="tag real">Réel · expérience</span>
+        </div>
+        <p class="meta">BDR · Sales Ops &amp; CRM · SaaS B2B cybersécurité · Alternance de 17 mois, sept. 2024 – janv. 2026</p>
+        <dl class="pdr">
+          <dt>Problème</dt>
+          <dd>Un objectif de 5 rendez-vous qualifiés par semaine avec des DSI et des RSSI, un pipe à renouveler en continu et un CRM à organiser pour toute l'équipe commerciale.</dd>
+          <dt>Ce que j'ai fait</dt>
+          <dd><ul>
+            <li>Construit une base de 8 000+ prospects : enrichissement Apollo et Lusha, chasse LinkedIn, listes de prestataires, tri par lots de 50 pour renouveler le pipe.</li>
+            <li>Structuré HubSpot : propriétés, pipelines, workflows, séquences et dashboards de suivi des KPI.</li>
+            <li>Mis en place des séquences de relance et une priorisation des leads dans HubSpot.</li>
+            <li>Utilisé l'IA pour préparer les listes, rédiger les emails et les relances.</li>
+            <li>Partagé mes retours terrain avec l'équipe : outils, méthodes, approche client.</li>
+          </ul></dd>
+          <dt>Résultat</dt>
+          <dd class="results">
+            <div><b>200+</b><span>RDV qualifiés</span></div>
+            <div><b>8 000+</b><span>prospects dans la base</span></div>
+            <div><b>17 mois</b><span>en alternance</span></div>
+          </dd>
+        </dl>
+        <div class="tools"><span class="tool">HubSpot</span><span class="tool">Apollo</span><span class="tool">Lusha</span><span class="tool">LinkedIn</span><span class="tool">Aircall</span><span class="tool">Claude</span></div>
+      </article>
+
+      <article class="proof">
+        <div class="proof-head">
+          <h3>AimLeads</h3>
+          <span class="tag wait">Réel · en stand-by</span>
+        </div>
+        <p class="meta">Outil IA de qualification de leads pour SDR · Conçu, codé et mis en ligne seul · 2025 – 2026</p>
+        <dl class="pdr">
+          <dt>Problème</dt>
+          <dd>Ce que j'ai vécu comme BDR : trop de temps passé à trier des listes et à personnaliser chaque message, au lieu d'appeler les bons leads.</dd>
+          <dt>Ce que j'ai fait</dt>
+          <dd><ul>
+            <li>Import d'un CSV, puis score de chaque lead de 0 à 100 selon le client idéal, avec une action recommandée.</li>
+            <li>Règles de scoring transparentes et couvertes par 23 tests automatisés.</li>
+            <li>Enrichissement par IA (Claude, avec recherche web) : signaux d'achat, risques et accroches personnalisées pour l'email, LinkedIn et l'appel.</li>
+            <li>Ajustement IA borné, pour que l'IA affine le score sans jamais le décider seule.</li>
+            <li>Système de crédits avec paiement Stripe, données isolées par client.</li>
+          </ul></dd>
+          <dt>Résultat</dt>
+          <dd class="result-text">Utilité validée dans mon mémoire de Master sur l'IA (EM Normandie). Testez le scoring en direct dans la démo.</dd>
+        </dl>
+        <div class="shots">
+          <figure class="wide"><button type="button" data-zoom aria-label="Agrandir la capture"><img src="img/aimleads-landing.webp" alt="Page d'accueil d'AimLeads : vos commerciaux appellent les bons leads en premier" loading="lazy" width="2400" height="1000"></button><figcaption>La page d'accueil d'AimLeads</figcaption></figure>
+        </div>
+        <div class="tools"><span class="tool">Next.js</span><span class="tool">Supabase</span><span class="tool">API Anthropic</span><span class="tool">Stripe</span></div>
+        <div class="links"><a class="go" href="demo/aimleads/">Essayer la démo interactive →</a><a href="https://github.com/Aimlead/Aimlead-v2" target="_blank" rel="noopener">Code source</a></div>
+      </article>
+
+      <article class="proof">
+        <div class="proof-head">
+          <h3>Tapote</h3>
+          <span class="tag real">Réel · en cours</span>
+        </div>
+        <p class="meta">Supports NFC et QR pour commerces de proximité · Projet entrepreneurial, conçu, codé et mis en ligne seul · 2026</p>
+        <dl class="pdr">
+          <dt>Problème</dt>
+          <dd>Un commerçant veut plus d'avis Google et de visites, sans outil compliqué. Et un support imprimé est figé : changer de lien oblige à tout réimprimer.</dd>
+          <dt>Ce que j'ai fait</dt>
+          <dd><ul>
+            <li>Une gamme de supports (chevalet, plaque, carte) qui ouvrent un avis, un menu, une réservation ou un contact d'un simple geste.</li>
+            <li>Une boutique avec configurateur en ligne et paiement Stripe.</li>
+            <li>Prototypes finaux des chevalets et de la carte réalisés.</li>
+            <li><strong>Tapote Pilot</strong>, l'espace client : changer le lien sans réimprimer, suivre les interactions, exporter en CSV.</li>
+            <li><strong>Tapote Gestion</strong>, le pilotage interne : commandes, clients, atelier, encodage NFC, stocks, expéditions.</li>
+            <li>Qualité de production : 156 tests automatisés, contrôles à chaque mise à jour, prix toujours recalculés côté serveur.</li>
+          </ul></dd>
+          <dt>Résultat</dt>
+          <dd class="result-text">Boutique, espace client et back-office en ligne sur tapote.fr. Lancement commercial en cours.</dd>
+        </dl>
+        <div class="shots">
+          <figure class="wide"><button type="button" data-zoom aria-label="Agrandir la capture"><img src="img/tapote-home.webp" alt="Page d'accueil de tapote.fr : le bon geste, au bon moment" loading="lazy" width="2400" height="1500"></button><figcaption>La boutique tapote.fr</figcaption></figure>
+          <figure><button type="button" data-zoom aria-label="Agrandir la capture"><img src="img/tapote-studio.webp" alt="Configurateur Tapote Studio : choix de l'offre, de la finition et de l'action" loading="lazy" width="2400" height="1560"></button><figcaption>Le configurateur : offre, finition, action, lien</figcaption></figure>
+          <figure><button type="button" data-zoom aria-label="Agrandir la capture"><img src="img/tapote-gamme.webp" alt="La gamme Tapote : chevalet, plaque et carte" loading="lazy" width="2400" height="1120"></button><figcaption>La gamme : chevalet, plaque, carte</figcaption></figure>
+          <figure><button type="button" data-zoom aria-label="Agrandir la capture"><img src="img/tapote-pilot.webp" alt="Tapote Pilot en mode démonstration : changer un lien, interactions des 30 derniers jours" loading="lazy" width="2400" height="1500"></button><figcaption>Tapote Pilot, l'espace client (mode démo, données fictives)</figcaption></figure>
+          <figure><button type="button" data-zoom aria-label="Agrandir la capture"><img src="img/tapote-gestion.webp" alt="Tapote Gestion en mode démonstration : CA, commandes, priorités opérationnelles" loading="lazy" width="2400" height="1500"></button><figcaption>Tapote Gestion, le back-office (mode démo, données fictives)</figcaption></figure>
+        </div>
+        <div class="tools"><span class="tool">React</span><span class="tool">Express</span><span class="tool">Supabase</span><span class="tool">Stripe</span><span class="tool">Claude Code</span></div>
+        <div class="links"><a class="go" href="https://tapote.fr" target="_blank" rel="noopener">Visiter tapote.fr →</a><a href="https://github.com/afrelaut/Tapote" target="_blank" rel="noopener">Code source</a></div>
+      </article>
+    </div>
+  </section>
+
+  <section id="parcours">
+    <div class="wrap">
+      <h2>Parcours</h2>
+      <p class="h2-sub">L'essentiel. Le détail est sur LinkedIn.</p>
+      <div class="cv">
+        <div class="cv-block">
+          <h3>Expérience</h3>
+          <ol>
+            <li><span class="when">2024 – 2026</span><span class="what"><strong>Mantra (CyberGuru)</strong><span>BDR · Sales Ops &amp; CRM, alternance</span></span></li>
+            <li><span class="when">2023 – 2024</span><span class="what"><strong>Carrefour</strong><span>Assistant commercial</span></span></li>
+            <li><span class="when">2023</span><span class="what"><strong>Mototeam</strong><span>Gestionnaire d'agence</span></span></li>
+            <li><span class="when">2021 – 2024</span><span class="what"><strong>Megadental, Essonne Développement, FVS Entertainment</strong><span>Marketing, développement économique, contenus</span></span></li>
+          </ol>
+        </div>
+        <div class="cv-block">
+          <h3>Formation et langues</h3>
+          <ol>
+            <li><span class="when">2026</span><span class="what"><strong>EM Normandie</strong><span>Master Grande École, Management &amp; Systèmes d'information</span></span></li>
+            <li><span class="when">2022</span><span class="what"><strong>IMT Business School</strong><span>Bachelor Management &amp; Nouvelles technologies, semestre à TU Dublin</span></span></li>
+            <li><span class="when">Langues</span><span class="what"><strong>Français natif · Anglais C1 · Allemand B1</strong><span>TOEIC 830</span></span></li>
+            <li><span class="when">Certifs</span><span class="what"><strong>Anthropic Academy · HubSpot</strong><span>Claude 101, Claude Code 101, Deploying Claude Enterprise · Sales Hub</span></span></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="contact">
+  <div class="wrap">
+    <h2>On en parle ?</h2>
+    <p class="h2-sub" style="margin-bottom:18px">Disponible immédiatement, en CDI.</p>
+    <div class="cta">
+      <a class="btn primary" href="mailto:afrelaut@gmail.com">afrelaut@gmail.com</a>
+      <a class="btn" href="https://www.linkedin.com/in/aymeric-frelaut-687909192" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+    <p>Aymeric Frelaut · Colombes (92), 20 min de Paris · Mis à jour en novembre 2026</p>
+  </div>
+</footer>
+
+<dialog class="zoom" id="zoom" aria-label="Capture agrandie">
+  <button class="close" type="button" aria-label="Fermer">×</button>
+  <img alt="">
+  <p></p>
+</dialog>
+<script>
+  const dlg = document.getElementById('zoom');
+  const big = dlg.querySelector('img'), cap = dlg.querySelector('p');
+  document.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => {
+    const img = b.querySelector('img');
+    big.src = img.currentSrc || img.src; big.alt = img.alt;
+    cap.textContent = b.parentElement.querySelector('figcaption')?.textContent || '';
+    dlg.showModal();
+  }));
+  dlg.addEventListener('click', e => { if (e.target !== big) dlg.close(); });
+</script>
+</body>
+</html>
