@@ -1,0 +1,738 @@
+<!doctype html><html lang="fr"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ton premier skill Claude · tuto d'Aymeric Frelaut</title>
+<meta name="description" content="Tuto interactif : créer son premier skill Claude en 30 à 45 minutes, sans compétence technique. Un parcours par métier (vente, support, RH, marketing, finance, compte rendu).">
+<meta property="og:title" content="Ton premier skill Claude · tuto interactif">
+<meta property="og:image" content="https://afrelaut.github.io/img/og.png">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Lexend:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Une carte de jeu : un accueil qui donne envie, 6 missions sur un chemin, une récompense. Un parcours par métier. */
+:root{
+  --bg:#f3f6f1; --card:#ffffff; --ink:#17212b; --soft:#5b6670; --line:#dbe2da;
+  --go:#ff6a2b; --go-ink:#c2410c; --go-soft:#ffe6d9;
+  --stop:#d92d20; --stop-soft:#fde7e5;
+  --win:#14935a; --win-soft:#dcf3e7;
+  --path:#c9d3c6; --shot:#ffffff;
+  --c1:#2563eb; --c2:#16a34a; --c3:#9333ea; --c4:#ea580c; --c5:#db2777;
+  --display:"Fredoka",ui-rounded,"Segoe UI",system-ui,sans-serif;
+  --body:"Lexend",ui-sans-serif,"Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121815; --card:#1b231f; --ink:#eef3ee; --soft:#a7b2ab; --line:#2c3832;
+  --go:#ff8a55; --go-ink:#ffa477; --go-soft:#3a2418; --stop:#ff6b5e; --stop-soft:#3b1a17;
+  --win:#3fcf8e; --win-soft:#15301f; --path:#34423a; --shot:#ffffff;
+  --c1:#60a5fa; --c2:#4ade80; --c3:#c084fc; --c4:#fb923c; --c5:#f472b6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121815; --card:#1b231f; --ink:#eef3ee; --soft:#a7b2ab; --line:#2c3832;
+  --go:#ff8a55; --go-ink:#ffa477; --go-soft:#3a2418; --stop:#ff6b5e; --stop-soft:#3b1a17;
+  --win:#3fcf8e; --win-soft:#15301f; --path:#34423a; --shot:#ffffff;
+  --c1:#60a5fa; --c2:#4ade80; --c3:#c084fc; --c4:#fb923c; --c5:#f472b6; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 var(--body)}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 64px;display:grid;grid-template-columns:minmax(0,1fr);gap:28px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1;text-wrap:balance}
+p{margin:0}
+:focus-visible{outline:3px solid var(--go);outline-offset:3px;border-radius:8px}
+.hl{color:var(--go-ink)}
+
+/* barre du haut */
+.prog{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);padding-block:10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.who{display:inline-flex;align-items:center;gap:6px;background:var(--go-soft);border:2px solid var(--go);border-radius:99px;padding:3px 6px 3px 12px;font:600 14px var(--body)}
+.who select{font:700 15px var(--display);color:var(--ink);background:transparent;border:0;padding:2px 4px;cursor:pointer;max-width:170px}
+.who select option{color:#17212b;background:#fff}
+.lvl{font:700 15px var(--display);white-space:nowrap}
+.pdots{flex:1;display:flex;justify-content:space-between;position:relative;max-width:380px;margin-left:auto;min-width:220px}
+.pdots::before{content:"";position:absolute;left:14px;right:14px;top:50%;height:3px;background:var(--line);transform:translateY(-50%)}
+.pdots a{position:relative;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--card);border:2px solid var(--line);color:var(--soft);font:700 14px var(--display);text-decoration:none}
+.pdots a.done{background:var(--win);border-color:var(--win);color:#fff}
+.pdots a.here{border-color:var(--go);color:var(--go-ink);box-shadow:0 0 0 3px var(--go-soft)}
+.pdots a.done.here{color:#fff}
+@media (max-width:640px){.pdots{flex-basis:100%;max-width:none;margin-left:0}.lvl{display:none}}
+
+/* accueil */
+.hero{display:grid;gap:18px;padding-top:18px}
+.tag{font:600 13px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--go-ink)}
+.hero h1{font-size:clamp(34px,6.4vw,58px);font-weight:700;letter-spacing:-.01em;max-width:18ch}
+.hero h1 .mins{display:inline-block;white-space:nowrap}
+.hero h1 s{color:var(--soft);text-decoration-thickness:4px;text-decoration-color:var(--stop)}
+.hero h1 b{color:var(--win);font-weight:700}
+.promise{font-size:clamp(18px,2.6vw,22px);max-width:46ch;color:var(--soft)}
+.promise b{color:var(--ink);font-weight:600}
+.pick{display:grid;gap:10px}
+.pick h2{font-size:20px;font-weight:600;display:flex;gap:10px;align-items:center}
+.pick h2 i{font-style:normal;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);font:700 15px var(--display)}
+.jobs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+button.job{font:inherit;color:inherit;text-align:left;cursor:pointer;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px;display:grid;gap:6px;align-content:start;min-width:0}
+button.job:hover{border-color:var(--go)}
+button.job[aria-pressed="true"]{border-color:var(--go);background:var(--go-soft)}
+.job svg{width:26px;height:26px;color:var(--go)}
+.job b{font:600 17px var(--display);line-height:1.15}
+.job span{font-size:14px;color:var(--soft);line-height:1.3}
+@media (max-width:860px){.jobs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:460px){.jobs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.demo{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1.15fr);gap:12px;align-items:stretch}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;gap:10px;align-content:start;min-width:0}
+.panel h3{font:600 14px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--soft);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.panel h3 .t{margin-left:auto;text-transform:none;letter-spacing:0;font:700 15px var(--display);border-radius:99px;padding:2px 10px}
+.t.slow{background:var(--stop-soft);color:var(--stop)}
+.t.fast{background:var(--win-soft);color:var(--win)}
+.bubble{background:var(--bg);border-radius:12px;padding:10px 12px;font-size:14.5px;line-height:1.5;overflow-wrap:anywhere;white-space:pre-line}
+.cmd{display:inline-block;font:600 14px ui-monospace,Menlo,Consolas,monospace;background:var(--go-soft);border:1px solid var(--go);border-radius:7px;padding:1px 7px}
+.panel.out{border:2px solid var(--win)}
+.arrow{display:grid;place-items:center;color:var(--go)}
+.arrow svg{width:40px;height:40px}
+.proof{font-size:13px;color:var(--soft);display:flex;gap:6px;align-items:center}
+.proof::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--win)}
+@media (max-width:760px){.demo{grid-template-columns:1fr}.arrow svg{transform:rotate(90deg)}}
+
+.roi{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center;background:var(--ink);color:var(--bg);border-radius:20px;padding:18px 20px}
+.roi .big{font:700 clamp(40px,7vw,64px)/1 var(--display);color:var(--go);font-variant-numeric:tabular-nums;white-space:nowrap}
+.roi .big small{font-size:.45em;color:var(--bg);margin-left:4px}
+.roi p{font-size:16px}
+.roi label{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
+.roi input{width:64px;font:700 17px var(--display);border:0;border-radius:8px;padding:3px 8px;background:var(--bg);color:var(--ink)}
+.roi .est{font-size:13px;opacity:.75;margin-top:4px}
+@media (max-width:560px){.roi{grid-template-columns:1fr}}
+
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:7px 14px 7px 9px;font-size:15px}
+.pill svg{width:20px;height:20px;color:var(--win);flex:none}
+.go{justify-self:start;display:inline-flex;align-items:center;gap:10px;background:var(--go);color:#fff;text-decoration:none;font:700 22px var(--display);border-radius:16px;padding:14px 26px;box-shadow:0 4px 0 color-mix(in srgb,var(--go) 60%,#000)}
+.go:hover{transform:translateY(1px);box-shadow:0 3px 0 color-mix(in srgb,var(--go) 60%,#000)}
+@media (prefers-reduced-motion:reduce){.go:hover{transform:none}}
+
+.map{position:relative;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding-top:6px}
+.map::before{content:"";position:absolute;left:8%;right:8%;top:30px;height:6px;border-radius:99px;background:repeating-linear-gradient(90deg,var(--path) 0 14px,transparent 14px 22px)}
+.step{position:relative;display:grid;color:inherit;text-decoration:none;justify-items:center;gap:4px;text-align:center;min-width:0}
+.dot{width:52px;height:52px;border-radius:50%;background:var(--card);border:3px solid var(--ink);display:grid;place-items:center;font:700 20px var(--display)}
+.step.goal .dot{background:var(--win);border-color:var(--win);color:#fff}
+.step b{font:600 15px var(--display);line-height:1.15}
+.step small{font-size:13px;color:var(--soft)}
+@media (max-width:640px){.map{grid-template-columns:repeat(3,1fr);row-gap:16px}.map::before{display:none}}
+
+/* missions */
+.mission{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding-top:36px;border-top:2px dashed var(--line);scroll-margin-top:70px}
+.mhead{display:grid;gap:8px}
+.mtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.mnum{font:700 14px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--go-ink)}
+.chip{display:inline-flex;align-items:center;gap:6px;font:600 14px var(--body);color:var(--soft);background:var(--card);border:1px solid var(--line);border-radius:99px;padding:3px 10px}
+.chip.job-chip{color:var(--go-ink);border-color:var(--go);background:var(--go-soft)}
+.mission h2{font-size:clamp(28px,5vw,38px);font-weight:700}
+.why{display:flex;gap:10px;align-items:baseline;font-size:17px}
+.why b{flex:none;font:700 13px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.stepl{display:flex;align-items:center;gap:10px;font:700 21px var(--display);margin:8px 0 0}
+.stepl i{font-style:normal;display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:var(--ink);color:var(--bg);font:700 16px var(--display);flex:none}
+.help{display:flex;gap:10px;align-items:center;font-size:15.5px;color:var(--soft)}
+.help b{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--card);border:2px solid var(--soft);color:var(--soft);font:700 14px var(--display)}
+.ui{font-weight:600;color:var(--ink)}
+
+/* captures annotées */
+.fig{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:8px 22px;align-items:start;margin:0}
+.fig.wide{grid-template-columns:minmax(0,1fr) 230px}
+.shot{position:relative;display:block;border:1px solid var(--line);border-radius:12px;overflow:visible;background:var(--shot);max-width:100%}
+.fig.sm .shot{max-width:440px}
+.fig.xs .shot{max-width:340px}
+.shot img{display:block;width:100%;height:auto;border-radius:12px}
+.box{position:absolute;border:3px solid var(--c);border-radius:8px;pointer-events:none;box-shadow:0 0 0 2px #fff8}
+.box i{position:absolute;left:-13px;top:-13px;width:24px;height:24px;border-radius:50%;background:var(--c);color:#fff;font:700 13px/24px var(--display);text-align:center;font-style:normal;box-shadow:0 1px 3px #0004}
+.legend{position:relative;margin:0;padding:0;list-style:none;font-size:15.5px;line-height:1.35}
+.legend li{display:flex;gap:10px;align-items:flex-start}
+.legend li i{flex:none;font-style:normal;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--c);color:#fff;font:700 13px var(--display)}
+.legend li>span{border-left:3px solid var(--c);padding-left:8px;min-width:0}
+.legend li.alert>span{color:var(--stop);font-weight:600}
+@media (min-width:821px){.legend li{position:absolute;left:0;right:0}}
+@media (max-width:820px){.fig,.fig.wide{grid-template-columns:minmax(0,1fr)}.legend{display:grid;gap:8px}}
+.shots2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px}
+@media (max-width:820px){.shots2{grid-template-columns:minmax(0,1fr)}}
+.shots2 .fig{grid-template-columns:minmax(0,1fr)}
+.shots2 .legend{display:grid;gap:8px}.shots2 .legend li{position:static}
+
+.copy{display:grid;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.copy .top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:600;flex-wrap:wrap}
+.copy pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font:15.5px/1.5 var(--body);background:var(--bg);border-radius:10px;padding:10px 12px;max-height:340px;overflow:auto}
+.copy button,.btn{font:600 15px var(--body);background:var(--ink);color:var(--bg);border:0;border-radius:99px;padding:8px 16px;cursor:pointer}
+.copy.main{border:2px solid var(--ink)}
+.copy.main button{background:var(--go);color:#fff;font-size:16px;padding:10px 20px;box-shadow:0 3px 0 color-mix(in srgb,var(--go) 60%,#000)}
+.copy.hot{position:relative;background:var(--go-soft);border:3px solid var(--go);border-radius:18px;padding:22px 16px 16px;box-shadow:0 6px 0 color-mix(in srgb,var(--go) 35%,transparent);margin-top:12px}
+.copy.hot .hot-tag{position:absolute;top:-14px;left:14px;background:var(--go);color:#fff;font:700 14px var(--display);border-radius:99px;padding:4px 12px}
+.copy.hot .top{font:600 18px var(--display)}
+.copy.hot pre{background:var(--card);border:2px dashed var(--go);font-size:17px;font-weight:500}
+.copy.hot button{background:var(--go);color:#fff;font-size:16px;padding:9px 20px;box-shadow:0 3px 0 color-mix(in srgb,var(--go) 60%,#000)}
+@media (prefers-reduced-motion:no-preference){.copy.hot{animation:hotpulse 2.4s ease-in-out 3}}
+@keyframes hotpulse{50%{box-shadow:0 6px 0 color-mix(in srgb,var(--go) 35%,transparent),0 0 0 8px color-mix(in srgb,var(--go) 22%,transparent)}}
+.edit-note{font-size:14.5px;color:var(--soft)}
+
+.stop{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;background:var(--stop-soft);border:3px solid var(--stop);border-radius:18px;padding:14px 18px}
+.stop svg{width:58px;height:58px}
+.stop h3{font-size:22px;color:var(--stop);font-weight:700}
+.btn-fake{display:inline-block;font:600 14px var(--body);border:1px solid var(--soft);border-radius:8px;padding:1px 10px;background:var(--card);color:var(--ink)}
+.stopline{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:var(--stop-soft);border:2px solid var(--stop);border-radius:12px;padding:9px 14px;font-size:16px}
+.stopline b{background:var(--stop);color:#fff;font:700 14px var(--display);border-radius:7px;padding:2px 8px}
+.key{background:var(--win-soft);border:2px solid var(--win);border-radius:14px;padding:12px 16px;font-size:17px;display:grid;gap:2px}
+.key b{font:700 15px var(--display);color:var(--win);letter-spacing:.04em;text-transform:uppercase}
+.def2{background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 16px;font-size:17px}
+.def2 b{font-family:var(--display);color:var(--go)}
+.def2 .hl{color:var(--go);font-weight:600}
+
+.cases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.case{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:10px;align-content:start;min-width:0}
+.case h4{margin:0;display:flex;gap:8px;align-items:center;font:600 17px var(--display)}
+.case h4 span{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--go-soft);color:var(--go-ink);flex:none;font:700 15px var(--display)}
+.rc-msg{background:var(--bg);border-radius:10px;padding:8px 10px;font-size:15px}
+.rc-l{display:block;font:600 12px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--soft);margin-bottom:2px}
+.case p{font-size:15px}
+.case p b{color:var(--win)}
+@media (max-width:760px){.cases{grid-template-columns:1fr}}
+.realcase{display:grid;gap:8px;background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:14px}
+.trap{display:flex;flex-wrap:wrap;gap:4px;align-items:baseline}
+.trap .rc-l{flex-basis:100%}
+.tp{font:inherit;background:transparent;border:0;border-bottom:2px dotted var(--soft);padding:0 2px;cursor:pointer;color:inherit}
+.tp:hover{background:var(--go-soft)}
+.tp.ok{background:var(--go-soft);border-bottom:2px solid var(--go)}
+.tp.no{text-decoration:line-through;color:var(--soft)}
+mark.later{background:transparent;color:inherit}
+mark.later.on{background:var(--go-soft);border-bottom:2px solid var(--go)}
+.rc-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rc-two p{border-radius:10px;padding:9px 12px;font-size:15.5px;display:grid;gap:3px}
+.rc-bad{background:var(--stop-soft)}.rc-bad b,.rc-bad small{color:var(--stop)}
+.rc-good{background:var(--win-soft)}.rc-good b{color:var(--win)}
+@media (max-width:560px){.rc-two{grid-template-columns:1fr}}
+.own{display:grid;gap:12px;background:var(--card);border:1px dashed var(--soft);border-radius:16px;padding:14px}
+.own h3{font-size:19px}
+details.more summary{cursor:pointer;font-weight:600;color:var(--soft)}
+details.more[open] summary{margin-bottom:10px}
+
+.quiz,.starsgame,.defi,.fill-check{display:grid;gap:10px;background:var(--card);border:2px dashed var(--go);border-radius:16px;padding:14px}
+.q{font:600 18px var(--display)}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opts button,.reveal{font:600 15px var(--body);background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:8px 14px;cursor:pointer}
+.opts button:hover{border-color:var(--go)}
+.opts button.ok{background:var(--win-soft);border-color:var(--win)}
+.opts button.no{background:var(--stop-soft);border-color:var(--stop)}
+.reveal{justify-self:start;font-size:14px;padding:5px 12px}
+.fb{font-weight:600}.fb:empty{display:none}
+.fb.ok{color:var(--win)}.fb.no{color:var(--stop)}
+.fill-check label{display:flex;gap:10px;align-items:center;font-size:16px;cursor:pointer}
+.fill-check input{width:20px;height:20px;accent-color:var(--win)}
+.fstar{color:var(--go-ink);font-size:20px}
+.checks{margin:0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:8px}
+.checks li{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:6px 14px;font-weight:600}
+.checks li::before{content:"✓ ";color:var(--win);font-weight:800}
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.sg button{display:grid;justify-items:center;gap:2px;font:700 40px var(--display);color:var(--line);background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:14px 10px;cursor:pointer;line-height:1}
+.sg button small{font:600 13px var(--body);color:var(--soft)}
+.sg button[aria-pressed="true"]{color:var(--go);border-color:var(--go);background:var(--go-soft)}
+.score{font-weight:600;color:var(--soft)}
+.win{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:var(--win-soft);border:2px solid var(--win);border-radius:16px;padding:12px 16px}
+.win label{display:flex;gap:12px;align-items:center;font-size:17px;cursor:pointer}
+.win input{width:26px;height:26px;accent-color:var(--win);flex:none}
+.win .gain{font-weight:600;color:var(--win)}
+.next{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:var(--bg);text-decoration:none;font:600 17px var(--display);border-radius:12px;padding:9px 16px}
+
+.badge{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;background:linear-gradient(135deg,var(--go-soft),var(--win-soft));border:2px solid var(--go);border-radius:20px;padding:16px 18px}
+.medal{font-size:64px;line-height:1}
+.bt{display:grid;gap:8px;min-width:0}
+.bt small{font:700 12px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.bt>b{font:700 24px var(--display)}
+.bt label{display:flex;gap:8px;align-items:center;font-size:15px;color:var(--soft);flex-wrap:wrap}
+.bt input{font:600 16px var(--body);border:1px solid var(--line);border-radius:8px;padding:4px 8px;background:var(--card);color:var(--ink);min-width:0;max-width:100%}
+.bt .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.dlmsg{font-size:14px;color:var(--soft)}.dlmsg:empty{display:none}
+@media (max-width:600px){.medal{font-size:44px}.badge{gap:10px}}
+.dgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.dgrid button{aspect-ratio:1;max-width:100%;border-radius:10px;border:2px solid var(--line);background:var(--bg);font:700 15px var(--display);color:var(--soft);cursor:pointer}
+.dgrid button[aria-pressed="true"]{background:var(--win);border-color:var(--win);color:#fff}
+@media (max-width:600px){.dgrid{grid-template-columns:repeat(5,1fr)}}
+.per{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:15.5px;color:var(--soft)}
+.per input{width:64px;font:600 16px var(--body);border:1px solid var(--line);border-radius:8px;padding:4px 8px;background:var(--bg);color:var(--ink)}
+.saved{font:700 20px var(--display);color:var(--win)}.saved:empty{display:none}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:6px;min-width:0}
+.tile b{font:600 17px var(--display)}.tile small{font-size:14px;color:var(--soft)}
+@media (max-width:700px){.tiles{grid-template-columns:1fr}}
+.annex{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.annex summary{cursor:pointer;font-weight:600}
+.annex table{width:100%;border-collapse:collapse;margin:10px 0}
+.annex td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.annex td:first-child{font-weight:700;white-space:nowrap}
+.mini{font-size:15px;color:var(--soft)}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--win);color:#fff;font:700 18px var(--display);padding:10px 20px;border-radius:99px;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:30}
+</style>
+
+<div style="background:#15161a;color:#ecedf0;font:14px/1.4 system-ui,sans-serif;padding:9px 16px;display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:space-between;align-items:center"><span>Tuto conçu par <b>Aymeric Frelaut</b> pour former des équipes à Claude. Exemples et entreprise (Logiplus) fictifs.</span><a href="../" style="color:#7d97ff;text-decoration:none;font-weight:600">← Retour au portfolio</a></div>
+<main class="wrap">
+
+  <nav class="prog" aria-label="Où tu en es">
+    <label class="who" for="metierSel">Parcours <select id="metierSel" aria-label="Changer de métier"></select></label>
+    <span class="lvl" id="pl">Accueil</span>
+    <div class="pdots" id="pdots"><a href="#m0" aria-label="Mission 0">0</a><a href="#m1" aria-label="Mission 1">1</a><a href="#m2" aria-label="Mission 2">2</a><a href="#m3" aria-label="Mission 3">3</a><a href="#m4" aria-label="Mission 4">4</a><a href="#m5" aria-label="Mission 5">5</a></div>
+  </nav>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- ACCUEIL -->
+  <header class="hero">
+    <span class="tag">30 à 45 min · à ton rythme · aucune compétence technique</span>
+    <h1><span data-t="tacheCourte"></span> en <span class="mins"><s data-t="avant"></s> <b data-t="apres"></b></span></h1>
+    <p class="promise">Tu crées ton propre assistant dans Claude. Ensuite, tu colles le message, <b>il écrit la réponse à ta place</b>. Tu n'as plus qu'à relire.</p>
+
+    <section class="pick" aria-label="Choisis ton métier">
+      <h2><i>1</i>Choisis ton métier : tout le tuto s'adapte</h2>
+      <div class="jobs" id="jobs"></div>
+    </section>
+
+    <section class="demo" aria-label="Exemple : avant et après">
+      <div class="panel">
+        <h3>Tu colles <span class="t slow">avant : <span data-t="avant"></span></span></h3>
+        <div class="bubble"><span class="cmd" data-t="slash"></span>
+<span data-t="usageMsg"></span></div>
+      </div>
+      <div class="arrow" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h26M22 9l11 11-11 11"/></svg></div>
+      <div class="panel out">
+        <h3>Tu obtiens <span class="t fast">après : <span data-t="apres"></span></span></h3>
+        <div class="bubble" data-t="resultat"></div>
+        <p class="proof">Vrai résultat, obtenu dans Claude en suivant ce tuto</p>
+      </div>
+    </section>
+
+    <section class="roi" aria-label="Le temps gagné">
+      <div class="big"><span id="roiH">0</span><small>h / mois</small></div>
+      <div>
+        <p><label for="roiFreq">Avec <input type="number" id="roiFreq" min="1" max="200" inputmode="numeric"> <span data-t="unite"></span>,</label> tu gagnes <b data-t="gain"></b> à chaque fois, soit environ <b id="roiY"></b> par an.</p>
+        <p class="est">Estimation : change le nombre pour ton vrai rythme.</p>
+      </div>
+    </section>
+
+    <div class="pills">
+      <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>Rien à installer</span>
+      <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>Tout est prêt à copier-coller</span>
+      <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>C'est toi qui relis et qui envoies</span>
+      <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>Sur ordinateur, avec ton compte Claude de l'entreprise</span>
+    </div>
+
+    <a class="go" href="#m0">Je commence <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+
+    <section aria-label="Les missions">
+      <div class="map">
+        <a class="step" href="#m0"><div class="dot">0</div><b>Réglage</b><small>2 min</small></a>
+        <a class="step" href="#m1"><div class="dot">1</div><b>Les pièges</b><small>3 min</small></a>
+        <a class="step" href="#m2"><div class="dot">2</div><b>Briefe Claude</b><small>7 min</small></a>
+        <a class="step" href="#m3"><div class="dot">3</div><b>Corrige</b><small>4 min</small></a>
+        <a class="step" href="#m4"><div class="dot">4</div><b>Teste</b><small>8 min</small></a>
+        <a class="step goal" href="#m5"><div class="dot">★</div><b>Ton assistant</b><small>5 min</small></a>
+      </div>
+    </section>
+  </header>
+
+  <!-- MISSION 0 -->
+  <section class="mission" id="m0" aria-labelledby="m0t">
+    <div class="mhead">
+      <div class="mtop"><span class="mnum">Mission 0</span><span class="chip">⏱ 2 min</span><span class="chip job-chip" data-t="label"></span></div>
+      <h2 id="m0t">Active un réglage</h2>
+      <p class="why"><b>Pourquoi</b>Sans ce réglage, Claude ne peut pas créer ton assistant.</p>
+    </div>
+    <div class="shots2">
+      <div data-fig="sh-menu" data-n="1,2"></div>
+      <div data-fig="sh-reglage" data-n="3,4"></div>
+    </div>
+    <div class="quiz" data-quiz>
+      <p class="q">Mini-défi : le bouton est déjà bleu. Tu fais quoi ?</p>
+      <div class="opts"><button type="button" data-ok="0" data-fb="Non : cliquer l'éteindrait.">Je clique dessus</button><button type="button" data-ok="1" data-fb="Bravo ! Bleu = déjà prêt.">Je ne touche à rien</button></div>
+      <p class="fb" aria-live="polite"></p>
+    </div>
+    <p class="help"><b>?</b>Pas de « Exécuter du code dans le cloud » ? Demande à la personne qui gère l'IA chez vous.</p>
+    <div class="win">
+      <label for="ok0"><input type="checkbox" id="ok0" data-step="0"><span>Le bouton est bleu. <span class="gain">Mission réussie : Claude est prêt.</span></span></label>
+      <a class="next" href="#m1">Mission 1 →</a>
+    </div>
+  </section>
+
+  <!-- MISSION 1 -->
+  <section class="mission" id="m1" aria-labelledby="m1t">
+    <div class="mhead">
+      <div class="mtop"><span class="mnum">Mission 1</span><span class="chip">⏱ 3 min</span><span class="chip job-chip" data-t="label"></span></div>
+      <h2 id="m1t">Repère les pièges</h2>
+      <p class="why"><b>Pourquoi</b>Un bon assistant ne se trompe pas sur les messages délicats. Tu vas le vérifier.</p>
+    </div>
+
+    <div class="realcase">
+      <p class="q">Mini-défi : où est le piège ? <small class="mini">Clique sur la partie difficile</small></p>
+      <div class="rc-msg trap"><span class="rc-l">Le message</span><button type="button" class="tp">Bonjour, j'ai été prélevée deux fois ce mois-ci.</button> <button type="button" class="tp" data-ok="1">Quand serai-je remboursée ?</button> <button type="button" class="tp">Merci. Mme Leroy</button></div>
+      <div class="rc-msg"><span class="rc-l">Ce que tu sais</span>Double prélèvement confirmé, remboursement lancé. <mark class="later">Aucune date.</mark></div>
+      <p class="fb" aria-live="polite"></p>
+      <div class="rc-two" id="rc-two" hidden>
+        <p class="rc-bad"><b>❌ Mauvaise réponse</b>« Vous serez remboursée sous 48 h. » <small>La date est inventée.</small></p>
+        <p class="rc-good"><b>✅ Bonne réponse</b>« Votre remboursement est lancé. Je reviens vers vous dès qu'il est fait. »</p>
+      </div>
+      <button type="button" class="reveal" id="reveal">Voir la réponse</button>
+    </div>
+
+    <p class="def2">C'est ça, un <b>cas difficile</b> : un vrai message où il est facile de <span class="hl">mal</span> répondre. Il y en a 3 sortes.</p>
+
+    <p class="stepl"><i>✓</i>Tes 3 cas sont déjà prêts</p>
+    <div class="cases" id="cases"></div>
+    <p class="help"><b>✓</b>Rien à noter : tu les colleras en un clic à la mission 4.</p>
+
+    <div class="own">
+      <h3>Tu préfères tes vrais messages ? <span class="mini">(facultatif)</span></h3>
+      <div class="copy hot"><span class="hot-tag">💡 Le raccourci qui t'aide le plus</span>
+        <div class="top"><span>Pas d'idée ? Demande à Claude de les inventer pour toi :</span><button type="button" data-copy="idee">Copier</button></div>
+        <pre id="cp-idee"></pre>
+      </div>
+      <div class="fig sm" data-fig="sh-creer" data-n="1" data-legend="Ouvre d'abord une nouvelle conversation : <span class=ui>+ Créer</span>, en haut à gauche. Colle le texte, puis envoie."></div>
+      <details class="more"><summary>Le modèle pour noter tes propres cas</summary>
+        <div class="copy"><div class="top"><span>Colle-le dans le Bloc-notes de ton ordinateur (ou Word) :</span><button type="button" data-copy="modele">Copier</button></div><pre id="cp-modele">Cas 1 – il manque une info
+Le message : [colle-le ici]
+Ce que je sais : [écris-le ici]
+
+Cas 2 – une info est floue
+Le message : [colle-le ici]
+Ce que je sais : [écris-le ici]
+
+Cas 3 – une info à garder pour toi
+Le message : [colle-le ici]
+Ce que je sais : [écris-le ici]</pre></div>
+        <p class="help"><b>🔒</b>Remplace les vrais noms de clients ou de candidats par des noms inventés.</p>
+      </details>
+    </div>
+
+    <div class="win">
+      <label for="ok1"><input type="checkbox" id="ok1" data-step="1"><span>J'ai lu mes 3 cas. <span class="gain">Mission réussie : tu sais où sont les pièges.</span></span></label>
+      <a class="next" href="#m2">Mission 2 →</a>
+    </div>
+  </section>
+
+  <!-- MISSION 2 -->
+  <section class="mission" id="m2" aria-labelledby="m2t">
+    <div class="mhead">
+      <div class="mtop"><span class="mnum">Mission 2</span><span class="chip">⏱ 7 min</span><span class="chip job-chip" data-t="label"></span></div>
+      <h2 id="m2t">Briefe Claude</h2>
+      <p class="why"><b>Pourquoi</b>Claude ne connaît pas ton métier : tu lui expliques comme à un nouveau collègue.</p>
+    </div>
+
+    <section class="stop" aria-label="Règle importante">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="20,2 44,2 62,20 62,44 44,62 20,62 2,44 2,20" fill="var(--stop)"/><text x="32" y="38" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="17" fill="#fff">STOP</text></svg>
+      <div><h3>Un bouton <span class="btn-fake">Enregistrer le Skill</span> va apparaître</h3><p>N'y touche pas encore. Tu enregistres seulement à la mission 5, une fois les tests faits.</p></div>
+    </section>
+
+    <p class="stepl"><i>A</i>Ouvre l'assistant de création</p>
+    <div class="shots2">
+      <div data-fig="sh-perso" data-n="1"></div>
+      <div data-fig="sh-ajouter" data-n="2,3"></div>
+    </div>
+
+    <p class="stepl"><i>B</i>Ajoute une phrase, puis envoie</p>
+    <p class="help"><b>💡</b>Un message en anglais est déjà écrit : c'est normal, ne le touche pas.</p>
+    <div class="copy"><div class="top"><span>Colle-la à la fin du message déjà écrit :</span><button type="button" data-copy="fr">Copier</button></div><pre id="cp-fr">Parle-moi en français et tutoie-moi.</pre></div>
+    <div class="fig" data-fig="sh-prompt" data-n="1,2"></div>
+
+    <p class="stepl"><i>C</i>Colle ton brief, puis envoie</p>
+    <div class="copy main"><div class="top"><span>Ton brief est prêt : copie, colle, envoie.</span><button type="button" data-copy="brief">Copier le brief</button></div><pre id="cp-brief"></pre></div>
+    <p class="edit-note">Tu peux remplacer <b data-t="perso"></b> et Logiplus par ton prénom et ton entreprise. Ou garde l'exemple tel quel pour ce premier essai.</p>
+    <p class="help"><b>⌨</b>Pour aller à la ligne sans envoyer : <span class="ui">Maj + Entrée</span></p>
+    <div class="fill-check" data-fill>
+      <p class="q">Coche au fur et à mesure : <span class="fstar">☆</span></p>
+      <label><input type="checkbox" id="fc1"> J'ai copié le brief</label>
+      <label><input type="checkbox" id="fc2"> Je l'ai collé dans Claude</label>
+      <label><input type="checkbox" id="fc3"> J'ai envoyé</label>
+    </div>
+    <div class="fig" data-fig="{m}-brief" data-n="1,2,3,4,5"></div>
+
+    <p class="stepl"><i>D</i>Regarde son premier essai</p>
+    <div class="fig" data-fig="{m}-essai"></div>
+    <p class="help"><b>💡</b>À droite, Claude affiche aussi le texte de ton assistant. Pas besoin de le lire.</p>
+    <div class="copy"><div class="top"><span>Pas d'essai affiché ? Écris :</span><button type="button" data-copy="montre">Copier</button></div><pre id="cp-montre">Montre-moi l'essai sur mon exemple.</pre></div>
+    <p class="stopline"><b>STOP</b>Ne clique pas encore sur <span class="btn-fake">Enregistrer le Skill</span>.</p>
+    <div class="win">
+      <label for="ok2"><input type="checkbox" id="ok2" data-step="2"><span>Claude m'a montré un premier essai. <span class="gain">Mission réussie : Claude connaît ta tâche.</span></span></label>
+      <a class="next" href="#m3">Mission 3 →</a>
+    </div>
+  </section>
+
+  <!-- MISSION 3 -->
+  <section class="mission" id="m3" aria-labelledby="m3t">
+    <div class="mhead">
+      <div class="mtop"><span class="mnum">Mission 3</span><span class="chip">⏱ 4 min</span><span class="chip job-chip" data-t="label"></span></div>
+      <h2 id="m3t">Corrige le premier essai</h2>
+      <p class="why"><b>Pourquoi</b>Chaque correction devient une règle que ton assistant garde pour toujours.</p>
+    </div>
+    <p class="key"><b>À retenir</b>Un résultat pas parfait ne veut pas dire que l'IA est nulle. Il lui manque une consigne : tu la donnes une fois, elle s'en souvient.</p>
+    <div class="quiz" data-quiz>
+      <p class="q">Mini-défi : quelle correction marche le mieux ?</p>
+      <div class="opts"><button type="button" data-ok="0" data-fb="Trop flou : Claude ne sait pas quoi changer.">« Fais mieux »</button><button type="button" data-ok="1" data-fb="Oui ! Précis, avec les mots exacts." data-t="quizOk"></button><button type="button" data-ok="0" data-fb="Il ne sait pas ce qui ne va pas.">« Recommence »</button></div>
+      <p class="fb" aria-live="polite"></p>
+    </div>
+    <div class="copy main"><div class="top"><span>Ta correction est prête : copie, colle, envoie.</span><button type="button" data-copy="correction">Copier</button></div><pre id="cp-correction"></pre></div>
+    <div class="fig" data-fig="{m}-correction" data-n="1,2"></div>
+    <p class="stopline"><b>STOP</b>Toujours pas <span class="btn-fake">Enregistrer le Skill</span> : d'abord les tests.</p>
+    <div class="win">
+      <label for="ok3"><input type="checkbox" id="ok3" data-step="3"><span>Le nouvel essai me plaît. <span class="gain">Mission réussie : ton assistant a ses premières règles.</span></span></label>
+      <a class="next" href="#m4">Mission 4 →</a>
+    </div>
+  </section>
+
+  <!-- MISSION 4 -->
+  <section class="mission" id="m4" aria-labelledby="m4t">
+    <div class="mhead">
+      <div class="mtop"><span class="mnum">Mission 4</span><span class="chip">⏱ 8 min</span><span class="chip job-chip" data-t="label"></span></div>
+      <h2 id="m4t">Teste tes 3 cas difficiles</h2>
+      <p class="why"><b>Pourquoi</b>Ton exemple marche. Sur les pièges de la mission 1, c'est là qu'on voit s'il est fiable.</p>
+    </div>
+    <p class="stepl"><i>A</i>Envoie tes 3 cas d'un coup</p>
+    <div class="copy main"><div class="top"><span>Tes 3 cas sont prêts : copie, colle, envoie.</span><button type="button" data-copy="test">Copier mes 3 cas</button></div><pre id="cp-test"></pre></div>
+    <p class="help"><b>!</b>N'explique pas où est le piège : le test, c'est qu'il s'en sorte seul.</p>
+
+    <p class="stepl"><i>B</i>Vérifie chaque réponse</p>
+    <ul class="checks"><li>Le bon format ?</li><li>Rien d'inventé ?</li><li>Le piège évité ?</li></ul>
+    <div class="fig" data-fig="{m}-test" data-n="1,2"></div>
+    <div class="starsgame" data-stars>
+      <p class="q">Le test final : gagne tes 3 étoiles</p>
+      <div class="sg"><button type="button" aria-pressed="false">★<small>Cas 1 réussi</small></button><button type="button" aria-pressed="false">★<small>Cas 2 réussi</small></button><button type="button" aria-pressed="false">★<small>Cas 3 réussi</small></button></div>
+      <p class="score" aria-live="polite">Clique sur une étoile quand un cas est bon.</p>
+    </div>
+
+    <p class="stepl"><i>C</i>Verrouille les règles</p>
+    <div class="copy main"><div class="top"><span>Copie, colle, envoie :</span><button type="button" data-copy="regle">Copier</button></div><pre id="cp-regle">Ajoute les règles que tu proposes, et celle-ci : une info confidentielle n'apparaît jamais dans le texte. Propose-moi la version à enregistrer.</pre></div>
+    <div class="fig" data-fig="{m}-regle" data-n="1,2"></div>
+    <div class="win">
+      <label for="ok4"><input type="checkbox" id="ok4" data-step="4"><span>Mes 3 cas sont bons. <span class="gain">Mission réussie : ton assistant est fiable.</span></span></label>
+      <a class="next" href="#m5">Mission 5 →</a>
+    </div>
+  </section>
+
+  <!-- MISSION 5 -->
+  <section class="mission" id="m5" aria-labelledby="m5t">
+    <div class="mhead">
+      <div class="mtop"><span class="mnum">Mission 5</span><span class="chip">⏱ 5 min</span><span class="chip job-chip" data-t="label"></span></div>
+      <h2 id="m5t">Enregistre et utilise ton assistant</h2>
+      <p class="why"><b>Pourquoi</b>Enregistré, il t'attend dans chaque nouvelle conversation.</p>
+    </div>
+    <p class="stepl"><i>A</i>Enregistre-le</p>
+    <div class="shots2">
+      <div data-fig="{m}-carte" data-n="1" data-legend="<span class=ui>Enregistrer le Skill</span> : maintenant, oui !"></div>
+      <div data-fig="{m}-ok" data-n="2" data-legend="C'est enregistré. Son nom : <b class=ui data-t=slash></b>"></div>
+    </div>
+
+    <p class="stepl"><i>B</i>Utilise-le dans une nouvelle conversation</p>
+    <div class="shots2">
+      <div data-fig="sh-creer" data-n="1" data-legend="<span class=ui>+ Créer</span>, en haut à gauche"></div>
+      <div data-fig="{m}-slash" data-n="2,3"></div>
+    </div>
+    <div class="copy main"><div class="top"><span>Ton premier vrai message, prêt à coller après le nom :</span><button type="button" data-copy="usage">Copier</button></div><pre id="cp-usage"></pre></div>
+    <div class="fig" data-fig="{m}-usage" data-n="4,5,6"></div>
+    <div class="fig" data-fig="{m}-resultat" data-n="7,8,9,10"></div>
+    <p class="stopline"><b>TOUJOURS</b>Relis avant d'envoyer : c'est toi qui envoies, pas Claude.</p>
+    <div class="win">
+      <label for="ok5"><input type="checkbox" id="ok5" data-step="5"><span>Mon assistant a écrit sa première vraie réponse. <span class="gain">Mission réussie : ton premier skill marche ! 🏆</span></span></label>
+      <a class="next" href="#fin">La suite →</a>
+    </div>
+  </section>
+
+  <!-- FIN -->
+  <section class="mission" id="fin" aria-labelledby="fint">
+    <div class="mhead"><h2 id="fint">🏆 Ton assistant est prêt</h2></div>
+    <div class="badge">
+      <div class="medal" aria-hidden="true">🏅</div>
+      <div class="bt"><small>Badge</small><b>Créateur de skill</b>
+        <label for="bname">Ton prénom <input type="text" id="bname" placeholder="Prénom" maxlength="30"></label>
+        <label for="bskill">Ton skill <input type="text" id="bskill" maxlength="40"></label>
+        <label for="bdate">Obtenu le <input type="date" id="bdate"></label>
+        <div class="row" id="dlrow" hidden><button type="button" class="btn" id="dlbtn">Télécharger mon badge</button><span class="dlmsg" id="dlmsg" aria-live="polite"></span></div>
+      </div>
+    </div>
+
+    <div class="defi" data-defi>
+      <p class="q">Défi 14 jours : utilise ton assistant 10 fois</p>
+      <label class="per" for="dmin">Une utilisation me fait gagner environ <input type="number" id="dmin" min="1" max="120" inputmode="numeric"> min</label>
+      <div class="dgrid"></div>
+      <p class="score" aria-live="polite"></p>
+      <p class="saved" id="dsaved"></p>
+    </div>
+
+    <div class="copy"><div class="top"><span>Ton aide-mémoire, à garder :</span><button type="button" data-copy="memo">Copier</button></div><pre id="cp-memo"></pre></div>
+
+    <p class="stepl"><i>→</i>Ton prochain assistant ?</p>
+    <div class="tiles"><div class="tile"><b>La tâche qui t'agace</b><small>Celle que tu repousses chaque semaine.</small></div><div class="tile"><b>Le mail que tu réécris</b><small>Toujours la même réponse, à chaque fois.</small></div><div class="tile"><b>Même méthode</b><small>Un brief, une correction, 3 cas difficiles, puis enregistrer.</small></div></div>
+
+    <details class="annex"><summary>Pour l'animateur : la séance en 1 heure</summary>
+      <table><tbody>
+        <tr><td>0–10 min</td><td>Accueil, choix du métier, missions 0 et 1</td></tr>
+        <tr><td>10–40 min</td><td>Missions 2 à 4 : briefer, corriger, tester. Rappeler le STOP.</td></tr>
+        <tr><td>40–50 min</td><td>Mission 5 : enregistrer et utiliser sur un vrai message</td></tr>
+        <tr><td>50–60 min</td><td>Tour de table : ce que les tests ont attrapé, et la prochaine tâche de chacun.</td></tr>
+      </tbody></table>
+      <p class="mini">À 2 semaines : combien de fois chaque assistant a servi, le temps gagné, les assistants abandonnés et pourquoi.</p>
+    </details>
+  </section>
+</main>
+
+<script>
+var D={"parcours": {"vente": {"label": "Vente", "tache": "le mail de suivi après un rendez-vous", "perso": "Thomas", "role": "commercial", "skill": "suivi-rdv", "lblMsg": "Mes notes du rendez-vous", "avant": 15, "apres": 2, "freq": 8, "unite": "rendez-vous par semaine", "brief": "Je suis commercial chez Logiplus, une PME qui vend un logiciel de gestion. Après chaque rendez-vous client, j'écris le mail de suivi.\nC'est pour : le client, par mail.\nÀ chaque fois, je veux : un mail court et chaleureux qui reprend ce qu'on s'est dit et propose la suite.\nNe jamais : inventer une date, un prix ou une promesse que je n'ai pas validés.\nAppelle ce skill : suivi-rdv\nLance ce skill seulement quand je l'appelle avec / et son nom.\nÀ la fin de chaque réponse, ajoute une ligne qui dit quel skill a été utilisé.\nNe me pose pas de questions : montre-moi tout de suite un premier essai sur cet exemple.\nVoici un vrai exemple :\nMes notes du rendez-vous : RDV avec Mme Garnier, DAF chez Batifor (80 salariés). Les notes de frais sont gérées sur Excel, l'équipe compta y passe 2 jours par mois. Intéressée par notre module Notes de frais. Veut une démo pour son équipe.\nCe que je sais : je peux proposer la démo mardi 3 novembre à 14 h ou jeudi 5 novembre à 10 h.", "correction": "C'est bien, mais plus court : 6 lignes maximum. Termine par une question simple pour fixer la suite. Signe toujours : Thomas, commercial Logiplus.", "cas": [{"t": "manque", "msg": "RDV avec M. Roux, Transalp. Il est partant. Il demande quand on peut démarrer.", "sait": "Date de démarrage pas encore confirmée par l'équipe technique.", "ok": "ne pas inventer de date"}, {"t": "floue", "msg": "RDV avec Mme Diallo, Pharmalys. Elle demande un effort sur le prix.", "sait": "Remise de 10 % ? à valider par mon chef.", "ok": "ne rien promettre"}, {"t": "secret", "msg": "RDV avec M. Faure, Agrinov. Il attend notre proposition.", "sait": "Son budget max : 20 000 €, il me l'a dit en confidence.", "ok": "ne jamais citer son budget"}], "test": "Je n'enregistre pas encore, je teste d'abord. Voici mes 3 cas :\n\nCas 1\nMes notes du rendez-vous : RDV avec M. Roux, Transalp. Il est partant. Il demande quand on peut démarrer.\nCe que je sais : Date de démarrage pas encore confirmée par l'équipe technique.\n\nCas 2\nMes notes du rendez-vous : RDV avec Mme Diallo, Pharmalys. Elle demande un effort sur le prix.\nCe que je sais : Remise de 10 % ? à valider par mon chef.\n\nCas 3\nMes notes du rendez-vous : RDV avec M. Faure, Agrinov. Il attend notre proposition.\nCe que je sais : Son budget max : 20 000 €, il me l'a dit en confidence.", "usageMsg": "Mes notes du rendez-vous : RDV avec M. Lemoine, Optima Conseil (25 salariés). Ils perdent du temps à relancer leurs factures. Intéressé par le module Relances. Veut un devis pour 5 utilisateurs.\nCe que je sais : Je lui envoie le devis d'ici vendredi.", "tacheCourte": "Ton mail de suivi", "quiz": "6 lignes maximum, signe : Thomas"}, "mail": {"label": "Support client", "tache": "la réponse à un client mécontent", "perso": "Julie", "role": "service client", "skill": "reponse-reclamation", "lblMsg": "Le message du client", "avant": 10, "apres": 1, "freq": 30, "unite": "réclamations par semaine", "brief": "Je suis au service client de Logiplus, une PME qui vend un logiciel de gestion par abonnement. Je réponds souvent aux mails de réclamation des clients.\nC'est pour : le client, par mail.\nÀ chaque fois, je veux : un mail court et poli qui répond à sa question.\nNe jamais : promettre une date ou un geste commercial que personne n'a validé.\nAppelle ce skill : reponse-reclamation\nLance ce skill seulement quand je l'appelle avec / et son nom.\nÀ la fin de chaque réponse, ajoute une ligne qui dit quel skill a été utilisé.\nNe me pose pas de questions : montre-moi tout de suite un premier essai sur cet exemple.\nVoici un vrai exemple :\nLe message du client : Bonjour, ça fait 3 fois que je vous écris pour ma facture de septembre : 12 licences au lieu de 10. Si rien n'est réglé cette semaine, je résilie. M. Dubreuil\nCe que je sais : erreur confirmée, avoir en cours, pas de date.", "correction": "C'est bien mais un peu long : va droit au but, 6 lignes maximum. Signe toujours : Julie, service client Logiplus.", "cas": [{"t": "manque", "msg": "Bonjour, j'ai été prélevée deux fois ce mois-ci. Quand serai-je remboursée ? Mme Leroy", "sait": "Double prélèvement confirmé, remboursement lancé. Aucune date.", "ok": "ne pas annoncer de date"}, {"t": "floue", "msg": "Bonjour, suite à la panne de mardi, vous pouvez m'offrir un mois gratuit ? Karim", "sait": "Geste commercial ? à voir avec mon manager.", "ok": "ne rien promettre"}, {"t": "secret", "msg": "Je veux résilier, votre service est nul. M. Petit", "sait": "Client pénible, déjà 2 gestes commerciaux. Résiliation possible en fin de mois.", "ok": "ne jamais écrire « client pénible »"}], "test": "Je n'enregistre pas encore, je teste d'abord. Voici mes 3 cas :\n\nCas 1\nLe message du client : Bonjour, j'ai été prélevée deux fois ce mois-ci. Quand serai-je remboursée ? Mme Leroy\nCe que je sais : Double prélèvement confirmé, remboursement lancé. Aucune date.\n\nCas 2\nLe message du client : Bonjour, suite à la panne de mardi, vous pouvez m'offrir un mois gratuit ? Karim\nCe que je sais : Geste commercial ? à voir avec mon manager.\n\nCas 3\nLe message du client : Je veux résilier, votre service est nul. M. Petit\nCe que je sais : Client pénible, déjà 2 gestes commerciaux. Résiliation possible en fin de mois.", "usageMsg": "Le message du client : Bonjour, mon application plante depuis la mise à jour. Vous la corrigez quand ? Sophie Martin\nCe que je sais : Bug connu, correctif en test, pas de date.", "tacheCourte": "Ta réponse au client mécontent", "quiz": "6 lignes maximum, signe : Julie"}, "fin": {"label": "Finance, compta", "tache": "la relance d'une facture impayée", "perso": "Nadia", "role": "comptabilité", "skill": "relance-facture", "lblMsg": "Le message du client", "avant": 12, "apres": 1, "freq": 15, "unite": "relances par semaine", "brief": "Je suis à la comptabilité de Logiplus, une PME qui vend un logiciel de gestion. Je réponds souvent aux clients qui n'ont pas payé une facture.\nC'est pour : le client, par mail.\nÀ chaque fois, je veux : un mail poli mais ferme, qui répond au client et rappelle la facture.\nNe jamais : inventer une référence, une date ou un délai de paiement non validé.\nAppelle ce skill : relance-facture\nLance ce skill seulement quand je l'appelle avec / et son nom.\nÀ la fin de chaque réponse, ajoute une ligne qui dit quel skill a été utilisé.\nNe me pose pas de questions : montre-moi tout de suite un premier essai sur cet exemple.\nVoici un vrai exemple :\nLe message du client : Bonjour, nous n'avons jamais reçu cette facture. Cordialement, service compta Batifor\nCe que je sais : facture F-2026-0412 de 1 800 € TTC, envoyée le 15 septembre à compta@batifor.fr, échue depuis le 15 octobre.", "correction": "Plus court : 6 lignes maximum. Rappelle toujours le numéro et le montant de la facture. Signe toujours : Nadia, comptabilité Logiplus.", "cas": [{"t": "manque", "msg": "Bonjour, je paierai quand j'aurai le bon de commande. M. Blanc, Transalp", "sait": "Aucun bon de commande trouvé dans le dossier.", "ok": "ne pas inventer de référence"}, {"t": "floue", "msg": "Bonjour, vous pouvez m'accorder un délai de paiement ? Mme Diallo, Pharmalys", "sait": "Délai possible ? à voir avec mon responsable.", "ok": "ne rien promettre"}, {"t": "secret", "msg": "Pourquoi cette relance ? On a toujours payé. M. Faure, Agrinov", "sait": "Client classé « à risque » en interne.", "ok": "ne jamais l'écrire"}], "test": "Je n'enregistre pas encore, je teste d'abord. Voici mes 3 cas :\n\nCas 1\nLe message du client : Bonjour, je paierai quand j'aurai le bon de commande. M. Blanc, Transalp\nCe que je sais : Aucun bon de commande trouvé dans le dossier.\n\nCas 2\nLe message du client : Bonjour, vous pouvez m'accorder un délai de paiement ? Mme Diallo, Pharmalys\nCe que je sais : Délai possible ? à voir avec mon responsable.\n\nCas 3\nLe message du client : Pourquoi cette relance ? On a toujours payé. M. Faure, Agrinov\nCe que je sais : Client classé « à risque » en interne.", "usageMsg": "Le message du client : Bonjour, la facture F-2026-0398 a été réglée hier par virement. Bien à vous, M. Colin, Optima Conseil\nCe que je sais : Virement pas encore reçu sur notre compte ce matin.", "tacheCourte": "Ta relance de facture", "quiz": "6 lignes maximum, signe : Nadia"}, "rh": {"label": "RH, admin", "tache": "la réponse à un candidat", "perso": "Camille", "role": "ressources humaines", "skill": "reponse-candidat", "lblMsg": "Le message du candidat", "avant": 10, "apres": 1, "freq": 20, "unite": "candidats par semaine", "brief": "Je suis aux ressources humaines de Logiplus, une PME de 60 personnes. Je réponds souvent aux mails des candidats.\nC'est pour : le candidat, par mail.\nÀ chaque fois, je veux : une réponse courte, chaleureuse et respectueuse.\nNe jamais : promettre un poste ou une date, ni donner d'info sur les autres candidats.\nAppelle ce skill : reponse-candidat\nLance ce skill seulement quand je l'appelle avec / et son nom.\nÀ la fin de chaque réponse, ajoute une ligne qui dit quel skill a été utilisé.\nNe me pose pas de questions : montre-moi tout de suite un premier essai sur cet exemple.\nVoici un vrai exemple :\nLe message du candidat : Bonjour, j'ai passé l'entretien pour le poste de chargé de clientèle jeudi dernier. Avez-vous des nouvelles ? Merci, Hugo Bernard\nCe que je sais : il est retenu pour un 2e entretien avec Sophie, la manager : mardi 3 novembre à 10 h ou mercredi 4 novembre à 14 h.", "correction": "Plus chaleureux et plus court : 5 lignes maximum. Signe toujours : Camille, ressources humaines Logiplus.", "cas": [{"t": "manque", "msg": "Bonjour, quand aurai-je une réponse pour le poste ? Clara Morel", "sait": "Aucune date de décision fixée.", "ok": "ne pas inventer de date"}, {"t": "floue", "msg": "Bonjour, où en est ma candidature ? Lucas Girard", "sait": "Profil intéressant, à revoir avec le manager ?", "ok": "ne rien promettre"}, {"t": "secret", "msg": "Bonjour, ai-je encore mes chances pour le poste ? Emma Roche", "sait": "Un autre candidat est préféré, rien n'est signé.", "ok": "ne pas le dire"}], "test": "Je n'enregistre pas encore, je teste d'abord. Voici mes 3 cas :\n\nCas 1\nLe message du candidat : Bonjour, quand aurai-je une réponse pour le poste ? Clara Morel\nCe que je sais : Aucune date de décision fixée.\n\nCas 2\nLe message du candidat : Bonjour, où en est ma candidature ? Lucas Girard\nCe que je sais : Profil intéressant, à revoir avec le manager ?\n\nCas 3\nLe message du candidat : Bonjour, ai-je encore mes chances pour le poste ? Emma Roche\nCe que je sais : Un autre candidat est préféré, rien n'est signé.", "usageMsg": "Le message du candidat : Bonjour, je suis toujours intéressée par le poste d'assistante administrative. Où en est le recrutement ? Laura Chevalier\nCe que je sais : Poste pourvu la semaine dernière. Son profil pourrait convenir pour un futur poste à l'accueil.", "tacheCourte": "Ta réponse au candidat", "quiz": "5 lignes maximum, signe : Camille"}, "mkt": {"label": "Marketing", "tache": "le post LinkedIn d'une actu", "perso": "Inès", "role": "communication", "skill": "post-linkedin", "lblMsg": "L'actu à annoncer", "avant": 30, "apres": 3, "freq": 3, "unite": "posts par semaine", "brief": "Je suis chargée de communication chez Logiplus, une PME qui vend un logiciel de gestion. J'écris souvent les posts LinkedIn de l'entreprise pour annoncer une actu.\nC'est pour : nos clients et prospects, sur LinkedIn.\nÀ chaque fois, je veux : un post court et accrocheur, qui donne envie d'en savoir plus.\nNe jamais : inventer un chiffre ou une date, ni citer un client sans son accord.\nAppelle ce skill : post-linkedin\nLance ce skill seulement quand je l'appelle avec / et son nom.\nÀ la fin de chaque réponse, ajoute une ligne qui dit quel skill a été utilisé.\nNe me pose pas de questions : montre-moi tout de suite un premier essai sur cet exemple.\nVoici un vrai exemple :\nL'actu à annoncer : on lance l'appli mobile Logiplus. Nos clients peuvent valider leurs notes de frais depuis leur téléphone.\nCe que je sais : disponible le 3 novembre sur iPhone et Android, gratuite pour tous les clients.", "correction": "Plus court : 5 lignes maximum. Un seul emoji, au début. Termine par 3 hashtags.", "cas": [{"t": "manque", "msg": "Nouveau partenariat avec la banque Créditis.", "sait": "Date de lancement du partenariat pas encore fixée.", "ok": "ne pas inventer de date"}, {"t": "floue", "msg": "Nos clients gagnent du temps avec Logiplus.", "sait": "Environ 3 h par mois ? Chiffre à confirmer avec le service client.", "ok": "ne pas citer ce chiffre"}, {"t": "secret", "msg": "On a signé un gros client dans la grande distribution.", "sait": "C'est Hypermarchés Duval, mais le contrat interdit de citer leur nom.", "ok": "ne jamais citer le nom"}], "test": "Je n'enregistre pas encore, je teste d'abord. Voici mes 3 cas :\n\nCas 1\nL'actu à annoncer : Nouveau partenariat avec la banque Créditis.\nCe que je sais : Date de lancement du partenariat pas encore fixée.\n\nCas 2\nL'actu à annoncer : Nos clients gagnent du temps avec Logiplus.\nCe que je sais : Environ 3 h par mois ? Chiffre à confirmer avec le service client.\n\nCas 3\nL'actu à annoncer : On a signé un gros client dans la grande distribution.\nCe que je sais : C'est Hypermarchés Duval, mais le contrat interdit de citer leur nom.", "usageMsg": "L'actu à annoncer : Logiplus sera au salon Solutions PME à Lyon.\nCe que je sais : Les 12 et 13 novembre, stand B24. Démos toutes les heures.", "tacheCourte": "Ton post LinkedIn", "quiz": "5 lignes maximum, 3 hashtags à la fin"}, "cr": {"label": "Tout le monde", "tache": "le compte rendu de réunion", "perso": "Karim", "role": "chef de projet", "skill": "compte-rendu", "lblMsg": "Mes notes de réunion", "avant": 20, "apres": 2, "freq": 3, "unite": "réunions par semaine", "brief": "Je suis chef de projet chez Logiplus, une PME qui vend un logiciel de gestion. Après chaque réunion, j'écris le compte rendu à partir de mes notes en vrac.\nC'est pour : les participants, par mail.\nÀ chaque fois, je veux : un compte rendu clair et court.\nNe jamais : inventer une date, désigner quelqu'un qui n'a pas dit oui, ni écrire une info personnelle.\nAppelle ce skill : compte-rendu\nLance ce skill seulement quand je l'appelle avec / et son nom.\nÀ la fin de chaque réponse, ajoute une ligne qui dit quel skill a été utilisé.\nNe me pose pas de questions : montre-moi tout de suite un premier essai sur cet exemple.\nVoici un vrai exemple :\nMes notes de réunion : réunion d'équipe lundi 19 octobre. Présents : Léa, Thomas, Nadia, Karim. Septembre : 42 nouveaux clients (+8 %). Salon de Lyon les 12 et 13 novembre : Thomas y va. Nadia envoie le nouveau tarif vendredi. Prochaine réunion lundi 26 octobre.\nCe que je sais : le compte rendu part à toute l'équipe.", "correction": "Commence par les décisions, puis une liste « Qui fait quoi, pour quand ». Pas plus de 10 lignes. Signe toujours : Karim, chef de projet.", "cas": [{"t": "manque", "msg": "Réunion du 21 octobre. Refonte du site : on lance, Sarah s'en occupe.", "sait": "Aucune date décidée.", "ok": "écrire « date à fixer »"}, {"t": "floue", "msg": "Réunion du 21 octobre. Newsletter : Paul pourrait s'en occuper ?", "sait": "Paul n'a pas encore dit oui.", "ok": "ne pas désigner Paul"}, {"t": "secret", "msg": "Réunion du 21 octobre. Marc absent.", "sait": "Marc est en arrêt maladie, à ne pas diffuser.", "ok": "ne pas parler de sa santé"}], "test": "Je n'enregistre pas encore, je teste d'abord. Voici mes 3 cas :\n\nCas 1\nMes notes de réunion : Réunion du 21 octobre. Refonte du site : on lance, Sarah s'en occupe.\nCe que je sais : Aucune date décidée.\n\nCas 2\nMes notes de réunion : Réunion du 21 octobre. Newsletter : Paul pourrait s'en occuper ?\nCe que je sais : Paul n'a pas encore dit oui.\n\nCas 3\nMes notes de réunion : Réunion du 21 octobre. Marc absent.\nCe que je sais : Marc est en arrêt maladie, à ne pas diffuser.", "usageMsg": "Mes notes de réunion : Réunion appli mobile, mercredi 21 octobre. Présents : Inès, Karim, Julie. Tests finis, 3 bugs à corriger avant le lancement. Julie prépare la FAQ client pour le 30 octobre. Inès prépare le post LinkedIn. Lancement maintenu au 3 novembre.\nCe que je sais : Le compte rendu part à l'équipe projet.", "tacheCourte": "Ton compte rendu de réunion", "quiz": "Les décisions d'abord, 10 lignes maximum"}}, "res": {"vente": "Objet : Suite à notre échange – module Relances\n\nBonjour Monsieur Lemoine,\nMerci pour notre échange.\nJ’ai bien noté que les relances de factures vous font perdre beaucoup de temps chez Optima Conseil.\nComme convenu, je vous envoie d’ici vendredi un devis pour notre module Relances, pour 5 utilisateurs.\nÀ quelle adresse souhaitez-vous le recevoir : celle-ci ou une autre ?\n\nThomas, commercial Logiplus", "mail": "Objet : Plantage de l’application depuis la mise à jour\n\nBonjour Madame Martin,\nDésolée pour la gêne : le plantage de l’application survenu depuis la dernière mise à jour est bien identifié par nos équipes et un correctif est actuellement en test.\nSa date de mise à disposition n’est pas encore fixée, mais je reviendrai vers vous dès qu’il sera disponible.\nBien cordialement,\nJulie, service client Logiplus", "fin": "Objet : Facture F-2026-0398 – Rapprochement de votre virement\n\nBonjour Monsieur Colin,\n\nMerci pour votre message concernant le règlement de la facture F-2026-0398, d’un montant de [montant].\nÀ ce jour, ce virement n’apparaît pas encore sur notre compte.\nAfin que nous puissions le rapprocher, pourriez-vous nous communiquer sa date d’exécution et sa référence, ou nous transmettre l’avis de virement ?\nNous reviendrons vers vous dès sa réception.\n\nCordialement,\nNadia\nComptabilité Logiplus", "rh": "Objet : Votre candidature au poste d'assistante administrative\n\nBonjour Laura,\n\nMerci d'avoir pris des nouvelles, et pour l'intérêt que vous portez à Logiplus.\nLe poste d'assistante administrative a été pourvu, et je tenais à vous le dire directement.\nVotre profil a retenu notre attention et nous aimerions le garder en tête pour de futures opportunités.\nSeriez-vous d'accord pour que nous conservions votre candidature dans ce but ?\nTrès belle fin de semaine à vous,\n\nCamille, ressources humaines Logiplus", "mkt": "📍 Vous passez au salon Solutions PME à Lyon les 12 et 13 novembre ?\nRetrouvez l’équipe Logiplus sur le stand B24.\nDémo toutes les heures : venez voir concrètement ce que Logiplus peut simplifier dans votre gestion.\nEnvie d’échanger sur place ? Écrivez-nous ou rendez-vous sur [lien vers la page].\n#Logiplus #SolutionsPME #Lyon", "cr": "Objet : Compte rendu – Réunion appli mobile du mercredi 21 octobre\n\nBonjour à tous,\n\nDécisions\n• Lancement de l’appli mobile maintenu au 3 novembre.\n\nQui fait quoi, pour quand\n• Responsable à désigner : corrige les 3 bugs – avant le lancement\n• Julie : prépare la FAQ client – 30 octobre\n• Inès : prépare le post LinkedIn – échéance à définir\n\nÀ noter : tests terminés.\nProchaine réunion : date à fixer\n\nKarim, chef de projet"}, "boxes": {"vente-brief": {"w": 899, "h": 589, "b": [[2.89, 4.41, 94.1, 29.2], [2.89, 33.45, 94.1, 9.17], [2.89, 42.28, 94.1, 5.09], [3.0, 47.88, 94.55, 4.41], [2.89, 52.63, 94.77, 23.6]]}, "vente-essai": {"w": 1073, "h": 760, "b": [[1.21, 12.37, 96.74, 60.66], [1.3, 95.13, 20.22, 4.21]]}, "vente-correction": {"w": 1073, "h": 819, "b": [[20.5, 2.2, 76.14, 8.91], [1.21, 47.25, 96.74, 32.48]]}, "vente-test": {"w": 1073, "h": 724, "b": [[1.21, 6.49, 96.74, 28.87], [1.21, 42.82, 96.74, 57.18]]}, "vente-regle": {"w": 1073, "h": 918, "b": [[19.29, 1.42, 77.35, 8.39], [1.21, 15.9, 96.74, 62.96]]}, "vente-resultat": {"w": 1023, "h": 664, "b": [[18.77, 3.01, 78.01, 23.64], [0.98, 42.62, 96.87, 44.28], [0.98, 87.95, 21.31, 4.82], [0.98, 93.83, 4.11, 5.42]]}, "vente-usage": {"w": 904, "h": 274, "b": [[2.99, 10.22, 11.73, 12.41], [2.65, 18.25, 94.91, 46.35], [92.92, 62.77, 5.64, 18.61]]}, "vente-slash": {"w": 904, "h": 424, "b": [[2.43, 36.56, 14.16, 9.43], [1.55, 23.11, 34.96, 11.08]]}, "vente-carte": {"w": 734, "h": 124, "b": [[68.8, 30.65, 26.57, 40.32]]}, "vente-ok": {"w": 734, "h": 124, "b": [[57.9, 30.65, 37.47, 40.32]]}, "mail-brief": {"w": 899, "h": 504, "b": [[2.89, 5.36, 94.1, 28.37], [2.89, 33.33, 94.1, 10.91], [2.89, 43.85, 94.1, 5.95], [3.0, 50.2, 94.55, 5.16], [2.89, 55.95, 95.22, 22.02]]}, "mail-essai": {"w": 1073, "h": 975, "b": [[1.21, 10.67, 96.74, 40.72], [1.3, 56.72, 30.66, 3.79], [0.93, 83.9, 66.17, 11.59]]}, "mail-correction": {"w": 1073, "h": 599, "b": [[20.78, 2.5, 75.86, 12.69], [1.21, 48.08, 96.74, 37.06]]}, "mail-test": {"w": 1073, "h": 622, "b": [[1.21, 9.0, 96.74, 35.69], [1.21, 59.65, 96.74, 40.35]]}, "mail-regle": {"w": 1023, "h": 873, "b": [[22.48, 3.09, 65.2, 8.93], [0.98, 17.87, 96.87, 66.32]]}, "mail-resultat": {"w": 1023, "h": 644, "b": [[18.57, 4.04, 78.3, 20.65], [0.98, 40.53, 96.87, 38.82], [0.98, 87.58, 32.26, 5.75], [0.98, 93.79, 4.11, 5.59]]}, "mail-usage": {"w": 904, "h": 255, "b": [[2.99, 8.63, 24.45, 14.12], [2.65, 17.65, 94.91, 38.43], [92.92, 53.73, 5.64, 20.39]]}, "mail-slash": {"w": 904, "h": 387, "b": [[2.43, 22.74, 14.16, 9.56], [1.55, 7.75, 34.96, 11.63]]}, "mail-carte": {"w": 734, "h": 124, "b": [[68.8, 30.65, 26.57, 40.32]]}, "mail-ok": {"w": 734, "h": 124, "b": [[57.9, 30.65, 37.47, 40.32]]}, "fin-brief": {"w": 899, "h": 532, "b": [[2.89, 4.89, 94.1, 27.07], [2.89, 31.58, 94.1, 10.34], [2.89, 41.54, 94.1, 5.64], [3.0, 47.56, 94.55, 4.89], [2.89, 53.01, 94.1, 26.13]]}, "fin-essai": {"w": 1073, "h": 779, "b": [[1.21, 12.32, 96.74, 65.6], [1.3, 90.24, 25.82, 4.11]]}, "fin-correction": {"w": 1073, "h": 873, "b": [[19.11, 2.41, 77.54, 8.93], [1.21, 33.45, 96.74, 43.53]]}, "fin-test": {"w": 1073, "h": 800, "b": [[1.21, 6.62, 96.74, 44.25], [1.21, 57.5, 96.74, 41.5]]}, "fin-regle": {"w": 1073, "h": 744, "b": [[19.29, 2.15, 77.35, 10.35], [1.21, 19.89, 96.74, 71.51]]}, "fin-resultat": {"w": 1023, "h": 810, "b": [[17.01, 3.21, 79.86, 15.93], [0.98, 31.85, 96.87, 47.28], [0.98, 91.11, 27.17, 3.95], [0.98, 96.05, 4.11, 3.95]]}, "fin-usage": {"w": 899, "h": 250, "b": [[2.67, 8.8, 19.02, 13.6], [2.34, 19.6, 95.22, 37.6], [93.1, 54.8, 5.67, 20.8]]}, "fin-slash": {"w": 904, "h": 387, "b": [[2.43, 22.74, 14.16, 9.56], [1.55, 7.75, 34.96, 11.63]]}, "fin-carte": {"w": 734, "h": 124, "b": [[68.8, 30.65, 26.57, 40.32]]}, "fin-ok": {"w": 734, "h": 124, "b": [[57.9, 30.65, 37.47, 40.32]]}, "rh-brief": {"w": 899, "h": 532, "b": [[2.89, 4.89, 94.1, 27.07], [2.89, 31.58, 94.1, 10.34], [2.89, 41.54, 94.1, 5.64], [3.0, 47.56, 94.55, 4.89], [2.45, 53.01, 94.55, 26.88]]}, "rh-essai": {"w": 1073, "h": 629, "b": [[1.21, 15.9, 96.74, 71.07], [1.3, 95.39, 27.87, 4.61]]}, "rh-correction": {"w": 1073, "h": 659, "b": [[20.13, 3.19, 76.51, 11.08], [1.21, 44.16, 96.74, 42.49]]}, "rh-test": {"w": 1073, "h": 762, "b": [[1.21, 5.64, 96.74, 32.94], [1.21, 51.44, 96.74, 48.56]]}, "rh-regle": {"w": 1073, "h": 744, "b": [[19.29, 2.28, 77.35, 10.35], [1.21, 20.03, 96.74, 71.51]]}, "rh-resultat": {"w": 1023, "h": 904, "b": [[18.77, 2.88, 78.1, 17.81], [2.44, 34.51, 95.41, 44.69], [0.98, 93.25, 29.33, 4.09], [0.98, 97.68, 4.11, 2.32]]}, "rh-usage": {"w": 899, "h": 278, "b": [[2.67, 7.55, 21.47, 12.95], [2.34, 17.27, 95.22, 45.32], [93.1, 59.35, 5.67, 18.35]]}, "rh-slash": {"w": 904, "h": 424, "b": [[2.43, 37.26, 15.27, 8.96], [1.55, 14.62, 34.96, 9.91]]}, "rh-carte": {"w": 734, "h": 124, "b": [[68.8, 30.65, 26.57, 40.32]]}, "rh-ok": {"w": 734, "h": 124, "b": [[57.9, 30.65, 37.47, 40.32]]}, "mkt-brief": {"w": 899, "h": 532, "b": [[2.89, 4.89, 94.33, 27.07], [2.89, 31.58, 94.1, 10.34], [2.89, 41.54, 94.1, 5.64], [3.0, 47.56, 94.55, 4.89], [2.89, 53.01, 94.88, 25.19]]}, "mkt-essai": {"w": 1073, "h": 450, "b": [[1.21, 28.0, 96.74, 72.0]]}, "mkt-correction": {"w": 1073, "h": 674, "b": [[26.28, 3.12, 70.74, 6.68], [1.21, 38.72, 96.74, 22.4]]}, "mkt-test": {"w": 1073, "h": 468, "b": [[1.21, 12.18, 96.74, 41.45], [1.21, 74.36, 96.74, 20.09]]}, "mkt-regle": {"w": 1073, "h": 720, "b": [[19.29, 2.36, 77.35, 10.69], [1.21, 20.69, 96.74, 64.72]]}, "mkt-resultat": {"w": 1023, "h": 570, "b": [[27.27, 4.56, 69.99, 17.54], [0.88, 39.82, 96.97, 32.28], [0.98, 85.79, 25.42, 6.49], [0.98, 92.81, 4.11, 6.32]]}, "mkt-usage": {"w": 899, "h": 219, "b": [[2.67, 9.59, 16.35, 16.44], [2.45, 20.55, 95.11, 31.51], [93.1, 49.77, 5.67, 23.29]]}, "mkt-slash": {"w": 904, "h": 424, "b": [[2.43, 36.56, 14.16, 9.43], [1.55, 23.11, 34.96, 11.08]]}, "mkt-carte": {"w": 734, "h": 124, "b": [[68.8, 30.65, 26.57, 40.32]]}, "mkt-ok": {"w": 734, "h": 124, "b": [[57.9, 30.65, 37.47, 40.32]]}, "cr-brief": {"w": 899, "h": 562, "b": [[2.89, 4.63, 94.1, 29.89], [2.89, 35.05, 94.1, 9.61], [2.89, 44.31, 94.1, 5.34], [3.0, 50.18, 94.55, 4.63], [2.89, 55.16, 94.1, 24.73]]}, "cr-essai": {"w": 1073, "h": 644, "b": [[1.21, 16.46, 96.74, 81.68]]}, "cr-correction": {"w": 1073, "h": 769, "b": [[19.38, 2.73, 77.17, 9.49], [1.21, 37.84, 96.74, 60.73]]}, "cr-test": {"w": 1073, "h": 655, "b": [[1.21, 7.79, 96.74, 67.79], [1.21, 83.66, 96.74, 16.34]]}, "cr-regle": {"w": 1073, "h": 944, "b": [[19.29, 1.69, 77.35, 8.26], [1.21, 15.78, 96.74, 68.64]]}, "cr-resultat": {"w": 1023, "h": 864, "b": [[19.75, 3.01, 77.13, 21.88], [0.98, 36.69, 96.87, 54.05], [0.98, 91.55, 26.3, 4.28], [0.98, 96.06, 4.11, 3.94]]}, "cr-usage": {"w": 899, "h": 282, "b": [[2.67, 7.45, 17.69, 12.77], [2.34, 15.6, 95.22, 44.68], [93.1, 58.51, 5.67, 18.09]]}, "cr-slash": {"w": 904, "h": 424, "b": [[2.43, 36.56, 15.27, 9.43], [1.55, 23.11, 34.96, 11.08]]}, "cr-carte": {"w": 734, "h": 124, "b": [[68.8, 30.65, 26.57, 40.32]]}, "cr-ok": {"w": 734, "h": 124, "b": [[57.9, 30.65, 37.47, 40.32]]}, "sh-menu": {"w": 574, "h": 489, "b": [[1.74, 88.34, 95.82, 10.22], [4.18, 8.59, 60.63, 8.18]]}, "sh-reglage": {"w": 1382, "h": 748, "b": [[1.59, 54.81, 17.66, 6.28], [21.42, 85.03, 77.13, 14.17]]}, "sh-perso": {"w": 574, "h": 437, "b": [[1.74, 77.35, 94.77, 11.21]]}, "sh-ajouter": {"w": 675, "h": 194, "b": [[74.52, 8.25, 22.07, 22.68], [59.7, 75.26, 36.59, 22.68]]}, "sh-prompt": {"w": 894, "h": 139, "b": [[5.82, 30.22, 38.7, 25.9], [93.51, 64.75, 5.82, 30.22]]}, "sh-creer": {"w": 574, "h": 437, "b": [[1.74, 14.65, 94.77, 10.98]]}}};
+(function(){
+  var KEY='premier-skill-v4',st={};
+  try{st=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+  var P=D.parcours,B=D.boxes,R=D.res,ORDER=['vente','mail','fin','rh','mkt','cr'];
+  var cur=P[st.metier]?st.metier:'cr';
+  var ICON={vente:'<path d="M3 7h18v12H3z"/><path d="M8 7V5h8v2"/>',mail:'<path d="M4 13a8 8 0 0 1 16 0v4a2 2 0 0 1-2 2h-2v-6h4M4 13v4a2 2 0 0 0 2 2h2v-6H4"/>',fin:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M8 15h2M12 15h2M8 18h8"/>',rh:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',mkt:'<path d="M3 11v3l12 5V6L3 11z"/><path d="M15 9a3 3 0 0 1 0 6M7 14l1 5h3l-1-4"/>',cr:'<path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/>'};
+  var KIND={manque:['?','Il manque une info'],floue:['≈','Une info est floue'],secret:['🔒','Une info à garder pour toi']};
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var toastEl=document.getElementById('toast'),tt;
+  function toast(t){toastEl.textContent=t;toastEl.hidden=false;clearTimeout(tt);tt=setTimeout(function(){toastEl.hidden=true},1800)}
+  function confetti(){if(reduce)return;var c=document.createElement('canvas');c.id='confetti';document.body.appendChild(c);var x=c.getContext('2d'),W=c.width=innerWidth,H=c.height=innerHeight,cols=['#ff6a2b','#14935a','#f2b705','#3b82f6','#d92d20'];var Q=[];for(var i=0;i<140;i++)Q.push({x:W/2,y:H/3,vx:(Math.random()-.5)*14,vy:Math.random()*-12-4,s:Math.random()*8+4,c:cols[i%5],r:Math.random()*6});var n=0;(function f(){x.clearRect(0,0,W,H);Q.forEach(function(p){p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=.2;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore()});if(++n<150)requestAnimationFrame(f);else c.remove()})()}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+  // sélecteur et cartes métiers
+  var sel=document.getElementById('metierSel'),jobs=document.getElementById('jobs');
+  ORDER.forEach(function(k){var p=P[k];var o=document.createElement('option');o.value=k;o.textContent=p.label;sel.appendChild(o);
+    var b=document.createElement('button');b.type='button';b.className='job';b.dataset.m=k;b.setAttribute('aria-pressed','false');
+    b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+ICON[k]+'</svg><b>'+esc(p.label)+'</b><span>'+esc(p.tache.charAt(0).toUpperCase()+p.tache.slice(1))+'</span>';
+    b.addEventListener('click',function(){setM(k,true)});jobs.appendChild(b)});
+  sel.addEventListener('change',function(){setM(sel.value,true)});
+
+  // légendes
+  var LEG={
+    brief:['Ton métier, pour qui, le format, ce qui est interdit','Le nom de ton assistant. Il ne se lance que si tu l\'appelles','Pour voir à chaque fois que c\'est bien lui qui travaille','Pour qu\'il te montre tout de suite un essai','Un exemple habituel. Tes 3 cas difficiles, c\'est pour la mission 4'],
+    essai:['Son premier essai, sur ton exemple','La preuve que c\'est ton assistant : ne la recopie pas','!Enregistrer le Skill : pas encore !'],
+    correction:['Ta correction, collée telle quelle','Le nouvel essai, corrigé'],
+    test:['La réponse au cas 3 : l\'info à garder pour toi n\'apparaît pas ✅','Claude te dit lui-même ce qu\'il a vérifié'],
+    regle:['Ton message, copié du tuto','Claude ajoute les règles et prépare la version à enregistrer'],
+    slash:['Tape « / » puis le début du nom','Clique sur ton assistant'],
+    usage:['Ton assistant','Le message et ce que tu sais, collés','La flèche pour envoyer'],
+    resultat:['Ce que tu as envoyé','Le texte prêt : tu relis, tu envoies','La preuve que ton assistant a travaillé : ne la recopie pas','Copier'],
+    'sh-menu':['Ton nom, en bas à gauche','<span class=ui>Paramètres</span>'],
+    'sh-reglage':['<span class=ui>Capacités</span>','<span class=ui>Exécuter du code dans le cloud</span> : <b>bleu</b>, ne touche à rien. <b>Gris</b>, clique dessus.'],
+    'sh-perso':['<span class=ui>Personnalisation</span>, dans le menu de gauche'],
+    'sh-ajouter':['<span class=ui>+ Ajouter</span>, en haut à droite','<span class=ui>Créer avec Claude</span>'],
+    'sh-prompt':['Ta phrase, collée à la fin','La flèche pour envoyer']
+  };
+  var COL=['--c1','--c2','--c3','--c4','--c5'];
+  function renderFig(el){
+    var name=el.dataset.fig.replace('{m}',cur),bx=B[name];if(!bx)return;
+    var type=name.indexOf('sh-')===0?name:name.split('-').slice(1).join('-');
+    var legs=el.dataset.legend?[el.dataset.legend]:(LEG[type]||[]);
+    var nums=el.dataset.n?el.dataset.n.split(','):bx.b.map(function(_,i){return String(i+1)});
+    var alt={brief:'Le brief collé dans Claude',essai:'Le premier essai de Claude',correction:'La correction et le nouvel essai',test:'La réponse de Claude au cas 3',regle:'Le message qui ajoute les règles',carte:'La carte Enregistrer le Skill',ok:'Skill enregistré',slash:'Le menu qui apparaît après « / »',usage:'Le message envoyé à l\'assistant',resultat:'La réponse de l\'assistant'}[type]||'Capture de Claude';
+    var h='<span class="shot"><img src="img/'+name+'.png" width="'+bx.w+'" height="'+bx.h+'" alt="'+alt+'" loading="lazy">';
+    var lh='';
+    bx.b.forEach(function(b,i){var c='var('+COL[i%5]+')',n=nums[i]||String(i+1);
+      h+='<span class="box" style="--c:'+c+';left:'+b[0]+'%;top:'+b[1]+'%;width:'+b[2]+'%;height:'+b[3]+'%"><i>'+n+'</i></span>';
+      var t=legs[i]||'';var a=t.charAt(0)==='!';if(a)t=t.slice(1);
+      lh+='<li'+(a?' class="alert"':'')+' style="--c:'+c+'" data-top="'+b[1]+'"><i>'+n+'</i><span>'+t+'</span></li>'});
+    h+='</span><ol class="legend">'+lh+'</ol>';
+    el.classList.add('fig');if(el.closest('.shots2')){}
+    el.innerHTML=h;
+    el.querySelectorAll('[data-t]').forEach(function(x){fill(x)});
+  }
+  function layoutLegends(){
+    var wide=innerWidth>820;
+    document.querySelectorAll('.fig').forEach(function(f){
+      var ol=f.querySelector('.legend'),img=f.querySelector('.shot img');if(!ol||!img)return;
+      if(!wide||f.closest('.shots2')){ol.style.height='';ol.querySelectorAll('li').forEach(function(li){li.style.top=''});return}
+      var H=img.getBoundingClientRect().height;if(!H)return;var y=0;
+      ol.querySelectorAll('li').forEach(function(li){var t=Math.max(parseFloat(li.dataset.top)/100*H,y);li.style.top=t+'px';y=t+li.offsetHeight+10});
+      ol.style.height=Math.max(H,y)+'px';
+    });
+  }
+  var rl;addEventListener('resize',function(){clearTimeout(rl);rl=setTimeout(layoutLegends,120)});
+
+  function val(k){var p=P[cur];
+    switch(k){
+      case 'avant':return p.avant+' min';case 'apres':return p.apres+' min';
+      case 'gain':return (p.avant-p.apres)+' min';
+      case 'slash':return '/'+p.skill;case 'resultat':return R[cur];
+      case 'quizOk':return '« '+p.quiz+' »';
+      default:return p[k]}
+  }
+  function fill(x){x.textContent=val(x.dataset.t)}
+  function roi(){var p=P[cur],f=parseInt(document.getElementById('roiFreq').value,10);if(!(f>0))f=p.freq;var min=f*(p.avant-p.apres)*52/12;var h=min/60;document.getElementById('roiH').textContent=h>=10?Math.round(h):h.toFixed(1).replace('.',',');document.getElementById('roiY').textContent=Math.round(h*12)+' h';}
+
+  function setM(k,user){
+    cur=k;st.metier=k;save();var p=P[k];
+    sel.value=k;jobs.querySelectorAll('.job').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.m===k)});
+    document.querySelectorAll('[data-t]').forEach(fill);
+    document.getElementById('roiFreq').value=(st.freq&&st.freq[k])||p.freq;roi();
+    document.getElementById('cp-brief').textContent=p.brief;
+    document.getElementById('cp-correction').textContent=p.correction;
+    document.getElementById('cp-test').textContent=p.test;
+    document.getElementById('cp-usage').textContent=p.usageMsg;
+    document.getElementById('cp-idee').textContent='Propose-moi 3 cas difficiles pour cette tâche : '+p.tache+'. Pour chacun : le message reçu, et ce que je saurais du dossier.';
+    document.getElementById('cp-memo').textContent='Mon assistant : /'+p.skill+'\nPour l\'utiliser : nouvelle conversation, je tape « / » puis son nom, et je colle le message.\nIl se trompe ? Je lui dis simplement ce qui ne va pas.';
+    var bs=document.getElementById('bskill');if(!st.bskill)bs.value='/'+p.skill;
+    var cs=document.getElementById('cases');cs.innerHTML='';
+    p.cas.forEach(function(c){var kd=KIND[c.t];cs.insertAdjacentHTML('beforeend','<div class="case"><h4><span>'+kd[0]+'</span>'+kd[1]+'</h4><div class="rc-msg"><span class="rc-l">'+esc(p.lblMsg)+'</span>'+esc(c.msg)+'</div><div class="rc-msg"><span class="rc-l">Ce que tu sais</span>'+esc(c.sait)+'</div><p><b>✅ Bonne réaction :</b> '+esc(c.ok)+'.</p></div>')});
+    document.querySelectorAll('[data-fig]').forEach(renderFig);
+    requestAnimationFrame(layoutLegends);
+    document.querySelectorAll('.fig img').forEach(function(i){if(!i.complete)i.addEventListener('load',layoutLegends,{once:true})});
+    if(user)toast('Parcours '+p.label+' ✓');
+  }
+  document.getElementById('roiFreq').addEventListener('input',function(){st.freq=st.freq||{};st.freq[cur]=this.value;save();roi()});
+
+  // copier
+  document.addEventListener('click',function(e){var b=e.target.closest('[data-copy]');if(!b)return;
+    var el=document.getElementById('cp-'+b.dataset.copy),t=el.textContent,lab=b.textContent;
+    function done(){b.textContent='Copié !';setTimeout(function(){b.textContent=lab},1500)}
+    function selc(){var r=document.createRange();r.selectNodeContents(el);var x=getSelection();x.removeAllRanges();x.addRange(r);b.textContent='Fais Ctrl+C'}
+    try{navigator.clipboard.writeText(t).then(done,selc)}catch(err){selc()}});
+
+  // missions
+  var boxes=[].slice.call(document.querySelectorAll('[data-step]')),dots=[].slice.call(document.querySelectorAll('#pdots a')),pl=document.getElementById('pl');
+  var names=['Réglage','Les pièges','Briefe Claude','Corrige','Teste','Ton assistant'];
+  var secs=[0,1,2,3,4,5].map(function(i){return document.getElementById('m'+i)}),fin=document.getElementById('fin');
+  function where(){var y=innerHeight*0.35,h=-1;secs.forEach(function(el,i){if(el.getBoundingClientRect().top<y)h=i});var atEnd=fin.getBoundingClientRect().top<y;
+    dots.forEach(function(d,i){d.classList.toggle('here',i===h&&!atEnd)});var all=boxes.every(function(b){return b.checked});
+    pl.textContent=atEnd?(all?'Terminé 🏆':'La fin'):(h<0?'Accueil':'Mission '+h+' · '+names[h])}
+  function paint(){boxes.forEach(function(b){dots[+b.dataset.step].classList.toggle('done',b.checked)});where()}
+  addEventListener('scroll',where,{passive:true});
+  boxes.forEach(function(b){b.checked=!!(st.m&&st.m[b.dataset.step]);b.addEventListener('change',function(){st.m=st.m||{};st.m[b.dataset.step]=b.checked;save();paint();
+    if(b.checked){if(b.dataset.step==='5'){toast('Ton premier skill marche ! 🏆');confetti()}else toast('Mission '+b.dataset.step+' réussie ✓')}})});
+  // quiz
+  document.querySelectorAll('[data-quiz]').forEach(function(q){var fb=q.querySelector('.fb');q.querySelectorAll('.opts button').forEach(function(b){b.addEventListener('click',function(){q.querySelectorAll('.opts button').forEach(function(o){o.classList.remove('ok','no')});var ok=b.dataset.ok==='1';b.classList.add(ok?'ok':'no');fb.textContent=(ok?'✅ ':'❌ ')+b.dataset.fb;fb.className='fb '+(ok?'ok':'no');if(ok)toast('Bien joué ✓')})})});
+  // piège
+  var two=document.getElementById('rc-two'),later=document.querySelector('mark.later'),tfb=document.querySelector('.realcase .fb');
+  function show(){two.hidden=false;later.classList.add('on');document.getElementById('reveal').hidden=true}
+  document.querySelectorAll('.tp').forEach(function(b){b.addEventListener('click',function(){if(b.dataset.ok){b.classList.add('ok');tfb.textContent='✅ Trouvé ! Tu ne sais pas quand elle sera remboursée : il ne faut pas inventer de date.';tfb.className='fb ok';show();toast('Piège trouvé ★')}else{b.classList.add('no');tfb.textContent='❌ Pas là. Cherche ce que tu ne sais pas encore.';tfb.className='fb no'}})});
+  document.getElementById('reveal').addEventListener('click',show);
+  // coche
+  document.querySelectorAll('[data-fill]').forEach(function(f){var cb=[].slice.call(f.querySelectorAll('input')),star=f.querySelector('.fstar');cb.forEach(function(c){c.addEventListener('change',function(){var n=cb.filter(function(x){return x.checked}).length;star.textContent=n===cb.length?'★ c\'est parti !':n+'/'+cb.length;if(n===cb.length)toast('Brief envoyé ★')})})});
+  // étoiles
+  document.querySelectorAll('[data-stars]').forEach(function(g){var b=[].slice.call(g.querySelectorAll('.sg button')),score=g.querySelector('.score');b.forEach(function(x){x.addEventListener('click',function(){x.setAttribute('aria-pressed',x.getAttribute('aria-pressed')!=='true');var n=b.filter(function(y){return y.getAttribute('aria-pressed')==='true'}).length;score.textContent=n===3?'★★★ 3 étoiles : ton assistant est fiable !':n+' / 3 étoiles';if(n===3)toast('★★★ Test réussi !')})})});
+
+  // badge
+  var bn=document.getElementById('bname'),bs=document.getElementById('bskill'),bd=document.getElementById('bdate');
+  if(st.bname)bn.value=st.bname;if(st.bskill)bs.value=st.bskill;
+  bd.value=st.bdate||new Date().toISOString().slice(0,10);
+  bn.addEventListener('input',function(){st.bname=bn.value;save()});bs.addEventListener('input',function(){st.bskill=bs.value;save()});bd.addEventListener('input',function(){st.bdate=bd.value;save()});
+  function badgePng(cb){var c=document.createElement('canvas');c.width=1200;c.height=630;var x=c.getContext('2d');
+    var g=x.createLinearGradient(0,0,1200,630);g.addColorStop(0,'#ffe6d9');g.addColorStop(1,'#dcf3e7');x.fillStyle=g;x.fillRect(0,0,1200,630);
+    x.strokeStyle='#ff6a2b';x.lineWidth=14;x.strokeRect(30,30,1140,570);
+    x.fillStyle='#ff6a2b';x.beginPath();x.arc(250,315,130,0,7);x.fill();x.fillStyle='#fff';x.font='700 150px Fredoka, sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText('★',250,322);
+    x.textAlign='left';x.textBaseline='alphabetic';x.fillStyle='#5b6670';x.font='600 30px Lexend, sans-serif';x.fillText('BADGE',440,180);
+    x.fillStyle='#17212b';x.font='700 76px Fredoka, sans-serif';x.fillText('Créateur de skill',440,265);
+    x.font='600 46px Fredoka, sans-serif';x.fillText((bn.value||'Prénom').slice(0,30),440,345);
+    x.fillStyle='#c2410c';x.font='600 36px Lexend, sans-serif';x.fillText((bs.value||'/mon-skill').slice(0,40)+' · '+P[cur].label,440,405);
+    var d=bd.value?new Date(bd.value+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}):'';
+    x.fillStyle='#5b6670';x.font='400 30px Lexend, sans-serif';x.fillText('Obtenu le '+d,440,465);
+    c.toBlob(cb,'image/png')}
+  var dlmsg=document.getElementById('dlmsg');
+  if(window.claude&&claude.use){claude.use('downloads').then(function(dl){if(!dl)return;document.getElementById('dlrow').hidden=false;
+    document.getElementById('dlbtn').addEventListener('click',function(){dlmsg.textContent='';badgePng(function(blob){dl.save({filename:'badge-createur-de-skill.png',data:blob}).then(function(r){dlmsg.textContent=r.status==='saved'?'Badge téléchargé ✓':''},function(e){dlmsg.textContent=(e&&e.code==='declined')?'':'Téléchargement impossible ici.'})})})}).catch(function(){})}
+
+  // défi
+  var dg=document.querySelector('.dgrid'),ds=document.querySelector('[data-defi] .score');st.d=st.d||[];
+  for(var i=0;i<10;i++){(function(i){var b=document.createElement('button');b.type='button';b.textContent=i+1;b.setAttribute('aria-label','Utilisation '+(i+1));b.setAttribute('aria-pressed',!!st.d[i]);b.addEventListener('click',function(){st.d[i]=!st.d[i];b.setAttribute('aria-pressed',st.d[i]);save();dpaint(true)});dg.appendChild(b)})(i)}
+  var dm=document.getElementById('dmin'),dsv=document.getElementById('dsaved');
+  dm.addEventListener('input',function(){st.dmin=dm.value;save();dpaint(false)});
+  function dpaint(anim){var n=st.d.filter(Boolean).length,per=Math.max(0,parseInt(dm.value,10)||0),t=n*per;ds.textContent=n>=10?'🏅 Défi réussi : 10 utilisations !':n+' / 10 utilisations';dsv.textContent=t?'⏱ '+(t>=60?Math.floor(t/60)+' h'+(t%60?' '+String(t%60).padStart(2,'0'):''):t+' min')+' gagnées':'';if(anim&&n===10){toast('Défi réussi ! 🏅');confetti()}}
+
+  setM(cur,false);
+  dm.value=st.dmin||(P[cur].avant-P[cur].apres);dpaint(false);paint();
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(layoutLegends);
+})();
+</script>
+
+</body></html>
