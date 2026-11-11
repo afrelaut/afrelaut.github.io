@@ -1,0 +1,402 @@
+{
+  "name": "Nordlys · Signaux sur comptes cibles (cas fictif)",
+  "nodes": [
+    {
+      "id": "61bf4b75-c378-518c-ac74-32461eb14ab1",
+      "name": "Chaque matin à 7 h 30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 7 * * 1-5"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "aa6433e5-cb9a-59f7-905e-55826e0ebebc",
+      "name": "Lancer à la main",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        400
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c3cda5ad-634f-5ef2-816e-8f018df156bb",
+      "name": "Paramètres",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Paramètres du workflow : la seule partie à adapter.\nreturn [{ json: {\n  hubspot_url: 'https://api.hubapi.com',\n  hubspot_portal_id: '0000000',            // pour les liens vers les fiches\n  anthropic_url: 'https://api.anthropic.com',\n  modele_claude: 'claude-haiku-5-5',\n  slack_webhook: 'https://hooks.slack.com/services/A_REMPLACER',\n  actualites_url: 'https://news.google.com/rss/search',\n  seuil_pertinence: 60,\n  jours: 2,\n}}];"
+      }
+    },
+    {
+      "id": "8ccdad2a-1c1b-5172-b337-e701bb982712",
+      "name": "HubSpot · comptes cibles",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.hubspot_url }}/crm/v3/objects/companies/search",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ filterGroups: [{ filters: [{ propertyName: 'compte_cible', operator: 'EQ', value: 'true' }] }], properties: ['name', 'domain', 'hubspot_owner_id'], limit: 100 }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-hubspot",
+          "name": "HubSpot (app privée)"
+        }
+      }
+    },
+    {
+      "id": "d46ca87e-9e8e-5c00-90b1-c1a0201062ba",
+      "name": "Un élément par compte",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        300
+      ],
+      "parameters": {
+        "jsCode": "return $input.first().json.results.map(c => ({ json: { id: c.id, nom: c.properties.name, domaine: c.properties.domain, owner_id: c.properties.hubspot_owner_id } }));"
+      }
+    },
+    {
+      "id": "984a6c9a-9caa-5f32-b283-5c6fcb291435",
+      "name": "Actualités du compte",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Paramètres').first().json.actualites_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "rss"
+            }
+          }
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ '\"' + $json.nom + '\" when:' + $('Paramètres').first().json.jours + 'd' }}"
+            },
+            {
+              "name": "hl",
+              "value": "fr"
+            },
+            {
+              "name": "gl",
+              "value": "FR"
+            },
+            {
+              "name": "ceid",
+              "value": "FR:fr"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "952be779-3054-5096-8941-3b6f42d50221",
+      "name": "Garder les articles récents",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Lit le flux RSS de chaque compte (même ordre que les comptes) et garde les 5 derniers articles.\nconst comptes = $('Un élément par compte').all();\nconst decode = s => s.replace(/<!\\[CDATA\\[|\\]\\]>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '\"').replace(/&#39;/g, \"'\").trim();\nconst sortie = [];\n$input.all().forEach((item, i) => {\n  const xml = String(item.json.rss || '');\n  const articles = [...xml.matchAll(/<item>([\\s\\S]*?)<\\/item>/g)].slice(0, 5).map(m => ({\n    titre: decode((m[1].match(/<title>([\\s\\S]*?)<\\/title>/) || [])[1] || ''),\n    lien: decode((m[1].match(/<link>([\\s\\S]*?)<\\/link>/) || [])[1] || ''),\n    date: (m[1].match(/<pubDate>([\\s\\S]*?)<\\/pubDate>/) || [])[1] || '',\n  }));\n  if (articles.length) sortie.push({ json: { ...comptes[i].json, articles } });\n});\nreturn sortie;"
+      }
+    },
+    {
+      "id": "97f03e43-c5fa-582e-9119-ac02f7fc36c2",
+      "name": "Claude · qualifier le signal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.anthropic_url }}/v1/messages",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $('Paramètres').first().json.modele_claude, max_tokens: 500, system: \"Tâche : signal_compte.\\nTu aides un SDR de Nordlys (logiciel de planning pour cliniques) à repérer un bon moment pour contacter un compte cible.\\nTu reçois le nom du compte et des titres d'articles récents. Classe le signal le plus utile.\\nRéponds UNIQUEMENT par un objet JSON : {\\\"signal\\\": \\\"levee_de_fonds\\\"|\\\"recrutement\\\"|\\\"nouveau_dirigeant\\\"|\\\"ouverture_de_site\\\"|\\\"rachat\\\"|\\\"aucun\\\", \\\"pertinence\\\": entier 0-100 (utilité pour vendre un logiciel de planning), \\\"preuve\\\": titre exact de l'article utilisé, \\\"source\\\": son lien, \\\"accroche\\\": 2 phrases en français pour un premier message, sans flatterie}.\\nUniquement ce que disent les articles. Si l'article ne parle pas vraiment du compte : \\\"aucun\\\" et pertinence 0.\", messages: [{ role: 'user', content: 'Compte : ' + $json.nom + ' (' + ($json.domaine || 'domaine inconnu') + ')\\nArticles :\\n' + $json.articles.map(a => '- ' + a.titre + ' | ' + a.lien + ' | ' + a.date).join('\\n') }] }) }}"
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-anthropic",
+          "name": "Anthropic (clé API)"
+        }
+      }
+    },
+    {
+      "id": "1ffa1377-f835-5798-8fa9-448c0b75d71a",
+      "name": "Garder les signaux utiles",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Lit la réponse de Claude (texte JSON) et la rend exploitable.\nfunction lireJson(reponse) {\n  const texte = (reponse.content || []).filter(b => b.type === 'text').map(b => b.text).join('');\n  const debut = texte.indexOf('{'), fin = texte.lastIndexOf('}');\n  if (debut < 0 || fin < debut) return null;\n  try { return JSON.parse(texte.slice(debut, fin + 1)); } catch (e) { return null; }\n}\n\nconst p = $('Paramètres').first().json;\nconst comptes = $('Garder les articles récents').all();\nreturn $input.all().map((item, i) => ({ compte: comptes[i].json, s: lireJson(item.json) }))\n  .filter(x => x.s && x.s.signal !== 'aucun' && Number(x.s.pertinence) >= p.seuil_pertinence)\n  .map(x => ({ json: { ...x.compte, ...x.s } }));"
+      }
+    },
+    {
+      "id": "8d758526-8297-5d53-8dda-ddf83062dd38",
+      "name": "HubSpot · tâche pour le SDR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.hubspot_url }}/crm/v3/objects/tasks",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: Date.now(), hs_task_subject: 'Signal ' + $json.signal.replace(/_/g, ' ') + ' : contacter ' + $json.nom, hs_task_body: $json.accroche + '\\n\\nSource : ' + $json.preuve + ' (' + $json.source + ')', hs_task_status: 'NOT_STARTED', hs_task_priority: 'HIGH', hubspot_owner_id: $json.owner_id }, associations: [{ to: { id: $json.id }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 192 }] }] }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-hubspot",
+          "name": "HubSpot (app privée)"
+        }
+      }
+    },
+    {
+      "id": "ada293b1-a5cf-5806-89e7-651e92965d28",
+      "name": "Résumé du jour",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        300
+      ],
+      "parameters": {
+        "jsCode": "const s = $('Garder les signaux utiles').all().map(i => i.json);\nreturn [{ json: { texte: `:satellite: *${s.length} signal(s) ce matin* sur les comptes cibles :\\n` + s.map(x => `• *${x.nom}* : ${x.signal.replace(/_/g, ' ')} (${x.pertinence}/100). <${x.source}|${x.preuve}>`).join('\\n') } }];"
+      }
+    },
+    {
+      "id": "33b0b582-8a91-59c1-a47c-b399fbccd7db",
+      "name": "Slack · envoyer le résumé",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.slack_webhook }}",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.texte }) }}"
+      }
+    },
+    {
+      "id": "c4ca7956-a301-5067-b0cc-d2fcfb212657",
+      "name": "Note ## Signaux sur comptes c",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -300
+      ],
+      "parameters": {
+        "content": "## Signaux sur comptes cibles\nCas de démonstration, entreprise fictive **Nordlys**.\n\nChaque matin, pour chaque compte marqué « compte cible » dans HubSpot : actualités des 2 derniers jours (Google Actualités), Claude classe le signal (levée, recrutement, nouveau dirigeant…) et propose une accroche. Si c'est utile : tâche HubSpot pour le SDR + résumé Slack.\n\nLa source est toujours citée : le SDR vérifie avant d'écrire.",
+        "width": 640,
+        "height": 230,
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Chaque matin à 7 h 30": {
+      "main": [
+        [
+          {
+            "node": "Paramètres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lancer à la main": {
+      "main": [
+        [
+          {
+            "node": "Paramètres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paramètres": {
+      "main": [
+        [
+          {
+            "node": "HubSpot · comptes cibles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot · comptes cibles": {
+      "main": [
+        [
+          {
+            "node": "Un élément par compte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Un élément par compte": {
+      "main": [
+        [
+          {
+            "node": "Actualités du compte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualités du compte": {
+      "main": [
+        [
+          {
+            "node": "Garder les articles récents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Garder les articles récents": {
+      "main": [
+        [
+          {
+            "node": "Claude · qualifier le signal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude · qualifier le signal": {
+      "main": [
+        [
+          {
+            "node": "Garder les signaux utiles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Garder les signaux utiles": {
+      "main": [
+        [
+          {
+            "node": "HubSpot · tâche pour le SDR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot · tâche pour le SDR": {
+      "main": [
+        [
+          {
+            "node": "Résumé du jour",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Résumé du jour": {
+      "main": [
+        [
+          {
+            "node": "Slack · envoyer le résumé",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Paris"
+  },
+  "meta": {
+    "description": "Cas de démonstration, entreprise fictive (Nordlys). Portfolio d'Aymeric Frelaut : https://afrelaut.github.io"
+  },
+  "tags": [],
+  "pinData": {}
+}

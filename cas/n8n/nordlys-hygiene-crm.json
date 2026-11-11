@@ -1,0 +1,285 @@
+{
+  "name": "Nordlys · Hygiène CRM du lundi (cas fictif)",
+  "nodes": [
+    {
+      "id": "9e7e9ada-0f73-5d46-bf4e-56269a552f95",
+      "name": "Chaque lundi à 8 h",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * 1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "aa6433e5-cb9a-59f7-905e-55826e0ebebc",
+      "name": "Lancer à la main",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        400
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c3cda5ad-634f-5ef2-816e-8f018df156bb",
+      "name": "Paramètres",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Paramètres du workflow : la seule partie à adapter.\nreturn [{ json: {\n  hubspot_url: 'https://api.hubapi.com',\n  hubspot_portal_id: '0000000',            // pour les liens vers les fiches\n  anthropic_url: 'https://api.anthropic.com',\n  modele_claude: 'claude-haiku-5-5',\n  slack_webhook: 'https://hooks.slack.com/services/A_REMPLACER',\n  jours_sans_activite: 30,\n}}];"
+      }
+    },
+    {
+      "id": "ec0197ad-e37e-5ba4-9afc-bf2ea5d1a321",
+      "name": "HubSpot · lire les contacts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Paramètres').first().json.hubspot_url }}/crm/v3/objects/contacts",
+        "options": {
+          "pagination": {
+            "pagination": {
+              "paginationMode": "updateAParameterInEachRequest",
+              "parameters": {
+                "parameters": [
+                  {
+                    "type": "qs",
+                    "name": "after",
+                    "value": "={{ $response.body.paging?.next?.after }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body.paging?.next?.after }}",
+              "limitPagesFetched": true,
+              "maxRequests": 50
+            }
+          }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "100"
+            },
+            {
+              "name": "properties",
+              "value": "email,firstname,lastname,company,phone,hs_lead_status,lifecyclestage,hubspot_owner_id"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-hubspot",
+          "name": "HubSpot (app privée)"
+        }
+      }
+    },
+    {
+      "id": "9eaf5d08-ca3a-5ee9-a882-e3107b789ebc",
+      "name": "HubSpot · lire les transactions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Paramètres').first().json.hubspot_url }}/crm/v3/objects/deals",
+        "options": {
+          "pagination": {
+            "pagination": {
+              "paginationMode": "updateAParameterInEachRequest",
+              "parameters": {
+                "parameters": [
+                  {
+                    "type": "qs",
+                    "name": "after",
+                    "value": "={{ $response.body.paging?.next?.after }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body.paging?.next?.after }}",
+              "limitPagesFetched": true,
+              "maxRequests": 50
+            }
+          }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "100"
+            },
+            {
+              "name": "properties",
+              "value": "dealname,dealstage,amount,closedate,hubspot_owner_id,notes_last_updated,hs_lastmodifieddate"
+            }
+          ]
+        }
+      },
+      "executeOnce": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-hubspot",
+          "name": "HubSpot (app privée)"
+        }
+      }
+    },
+    {
+      "id": "141c0c38-24da-5a86-94c8-1b5fe656f820",
+      "name": "Contrôler la qualité",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Contrôle qualité du CRM : rien n'est modifié, on signale.\nconst p = $('Paramètres').first().json;\nconst contacts = $('HubSpot · lire les contacts').all().flatMap(i => i.json.results || []);\nconst deals = $('HubSpot · lire les transactions').all().flatMap(i => i.json.results || []);\nconst lien = (type, id) => `https://app.hubspot.com/contacts/${p.hubspot_portal_id}/record/${type}/${id}`;\nconst norm = s => String(s || '').trim().toLowerCase();\n\n// Doublons : même email, ou même prénom + nom + entreprise.\nconst vus = new Map(); const doublons = [];\nfor (const c of contacts) {\n  const pr = c.properties || {};\n  for (const cle of [norm(pr.email), [pr.firstname, pr.lastname, pr.company].map(norm).join('|')]) {\n    if (!cle || cle === '||') continue;\n    if (vus.has(cle) && vus.get(cle) !== c.id) { doublons.push({ id: c.id, avec: vus.get(cle), cle }); break; }\n    vus.set(cle, c.id);\n  }\n}\nconst sansProprio = contacts.filter(c => !c.properties?.hubspot_owner_id);\nconst sansEntreprise = contacts.filter(c => !c.properties?.company);\nconst sansStatut = contacts.filter(c => !c.properties?.hs_lead_status);\n\nconst limite = Date.now() - p.jours_sans_activite * 864e5;\nconst ouvertes = deals.filter(d => !['closedwon', 'closedlost'].includes(d.properties?.dealstage));\nconst derniere = d => Date.parse(d.properties?.notes_last_updated || d.properties?.hs_lastmodifieddate || 0);\nconst endormies = ouvertes.filter(d => derniere(d) < limite);\nconst sansDate = ouvertes.filter(d => !d.properties?.closedate);\nconst datePassee = ouvertes.filter(d => d.properties?.closedate && Date.parse(d.properties.closedate) < Date.now());\nconst sansMontant = ouvertes.filter(d => !d.properties?.amount);\n\nconst complets = contacts.filter(c => c.properties?.hubspot_owner_id && c.properties?.company && c.properties?.hs_lead_status).length;\nconst qualite = contacts.length ? Math.round(100 * complets / contacts.length) : 100;\nconst exemples = (l, type, titre) => l.slice(0, 3).map(x => `• <${lien(type, x.id)}|${titre(x)}>`).join('\\n');\n\nconst texte = [\n  `:broom: *Hygiène CRM du lundi* : ${contacts.length} contacts, ${ouvertes.length} transactions ouvertes. Contacts complets : *${qualite} %*.`,\n  `*Contacts* : ${doublons.length} doublons probables, ${sansProprio.length} sans propriétaire, ${sansEntreprise.length} sans entreprise, ${sansStatut.length} sans statut de lead.`,\n  exemples(doublons, '0-1', d => `doublon de ${d.avec}`),\n  `*Transactions* : ${endormies.length} sans activité depuis ${p.jours_sans_activite} jours, ${datePassee.length} avec une date de closing dépassée, ${sansDate.length} sans date de closing, ${sansMontant.length} sans montant.`,\n  exemples(endormies, '0-3', d => d.properties.dealname || d.id),\n].filter(Boolean).join('\\n');\n\nreturn [{ json: { qualite, contacts: contacts.length, doublons: doublons.length, sans_proprietaire: sansProprio.length,\n  transactions_ouvertes: ouvertes.length, endormies: endormies.length, date_depassee: datePassee.length,\n  sans_date: sansDate.length, sans_montant: sansMontant.length, texte } }];"
+      }
+    },
+    {
+      "id": "7d0da13e-3d30-5d7b-a06a-c7adf0955b80",
+      "name": "Slack · envoyer le rapport",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.slack_webhook }}",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: $json.texte }) }}"
+      }
+    },
+    {
+      "id": "1579293e-c957-5621-9f28-8a9088eadaad",
+      "name": "Note ## Hygiène CRM du lundi\n",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -300
+      ],
+      "parameters": {
+        "content": "## Hygiène CRM du lundi\nCas de démonstration, entreprise fictive **Nordlys**.\n\nChaque lundi à 8 h, le workflow lit tout HubSpot (pagination comprise) et envoie au manager :\n- doublons probables, contacts sans propriétaire, sans entreprise, sans statut ;\n- transactions endormies, dates de closing dépassées ou absentes, montants manquants ;\n- un % de fiches complètes, à suivre semaine après semaine.\n\nRien n'est corrigé automatiquement : chaque ligne renvoie vers la fiche.",
+        "width": 640,
+        "height": 230,
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Chaque lundi à 8 h": {
+      "main": [
+        [
+          {
+            "node": "Paramètres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lancer à la main": {
+      "main": [
+        [
+          {
+            "node": "Paramètres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paramètres": {
+      "main": [
+        [
+          {
+            "node": "HubSpot · lire les contacts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot · lire les contacts": {
+      "main": [
+        [
+          {
+            "node": "HubSpot · lire les transactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot · lire les transactions": {
+      "main": [
+        [
+          {
+            "node": "Contrôler la qualité",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contrôler la qualité": {
+      "main": [
+        [
+          {
+            "node": "Slack · envoyer le rapport",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Paris"
+  },
+  "meta": {
+    "description": "Cas de démonstration, entreprise fictive (Nordlys). Portfolio d'Aymeric Frelaut : https://afrelaut.github.io"
+  },
+  "tags": [],
+  "pinData": {}
+}

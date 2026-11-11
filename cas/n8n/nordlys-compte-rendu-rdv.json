@@ -1,0 +1,381 @@
+{
+  "name": "Nordlys · Compte rendu de RDV → HubSpot (cas fictif)",
+  "nodes": [
+    {
+      "id": "4a83bed1-7b67-5fe8-9363-04d838ca393b",
+      "name": "Transcription reçue",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nordlys-compte-rendu",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "webhookId": "nordlys-compte-rendu"
+    },
+    {
+      "id": "c3cda5ad-634f-5ef2-816e-8f018df156bb",
+      "name": "Paramètres",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Paramètres du workflow : la seule partie à adapter.\nreturn [{ json: {\n  hubspot_url: 'https://api.hubapi.com',\n  hubspot_portal_id: '0000000',            // pour les liens vers les fiches\n  anthropic_url: 'https://api.anthropic.com',\n  modele_claude: 'claude-haiku-5-5',\n  slack_webhook: 'https://hooks.slack.com/services/A_REMPLACER',\n  relance_par_defaut_jours: 7,\n}}];"
+      }
+    },
+    {
+      "id": "f5eb1610-aa49-5f61-bb93-5fb74969daba",
+      "name": "Préparer la transcription",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Vérifie l'entrée (email du contact + transcription) et coupe les textes trop longs.\nconst b = $('Transcription reçue').first().json.body || {};\nconst transcription = String(b.transcription || '').trim();\nreturn [{ json: {\n  email_contact: String(b.email_contact || '').trim().toLowerCase(),\n  commercial: String(b.commercial || 'commercial'),\n  date_rdv: b.date_rdv || new Date().toISOString().slice(0, 10),\n  transcription: transcription.slice(0, 60000),\n  exploitable: transcription.length > 200,\n}}];"
+      }
+    },
+    {
+      "id": "c1900968-d831-5ae7-801f-a954146e8f13",
+      "name": "Claude · résumer le RDV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.anthropic_url }}/v1/messages",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $('Paramètres').first().json.modele_claude, max_tokens: 1200, system: \"Tâche : compte_rendu_rdv.\\nTu lis la transcription d'un rendez-vous commercial de Nordlys (logiciel de planning pour cliniques) et tu prépares la mise à jour du CRM.\\nRéponds UNIQUEMENT par un objet JSON : {\\\"resume\\\": 5 lignes maximum en français, \\\"besoins\\\": [textes], \\\"objections\\\": [textes], \\\"decideurs\\\": [\\\"Nom, rôle\\\"], \\\"budget\\\": texte ou null, \\\"prochaine_etape\\\": texte, \\\"date_relance\\\": \\\"AAAA-MM-JJ\\\" ou null, \\\"etape_suggeree\\\": \\\"decouverte\\\"|\\\"demo\\\"|\\\"proposition\\\"|\\\"negociation\\\"|\\\"perdu\\\", \\\"a_verifier\\\": [points flous à confirmer]}.\\nN'invente rien : uniquement ce qui est dit dans la transcription. Si une information manque, null ou liste vide.\", messages: [{ role: 'user', content: 'Date du RDV : ' + $json.date_rdv + '\\n\\nTranscription :\\n' + $json.transcription }] }) }}"
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-anthropic",
+          "name": "Anthropic (clé API)"
+        }
+      }
+    },
+    {
+      "id": "5900603c-99c0-5b72-bbc9-24b1a1dd562b",
+      "name": "Lire le compte rendu",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Lit la réponse de Claude (texte JSON) et la rend exploitable.\nfunction lireJson(reponse) {\n  const texte = (reponse.content || []).filter(b => b.type === 'text').map(b => b.text).join('');\n  const debut = texte.indexOf('{'), fin = texte.lastIndexOf('}');\n  if (debut < 0 || fin < debut) return null;\n  try { return JSON.parse(texte.slice(debut, fin + 1)); } catch (e) { return null; }\n}\n\nconst entree = $('Préparer la transcription').first().json;\nconst p = $('Paramètres').first().json;\nconst cr = lireJson($input.first().json) || { resume: 'Résumé IA indisponible.', besoins: [], objections: [], decideurs: [], a_verifier: ['Relire la transcription'] };\nlet relance = cr.date_relance && /^\\d{4}-\\d{2}-\\d{2}$/.test(cr.date_relance) ? new Date(cr.date_relance + 'T09:00:00Z') : null;\nif (!relance || isNaN(relance)) relance = new Date(Date.now() + p.relance_par_defaut_jours * 864e5);\nconst liste = (t, l) => (l && l.length) ? `<p><b>${t}</b></p><ul>${l.map(x => `<li>${x}</li>`).join('')}</ul>` : '';\nconst note = `<p><b>Compte rendu du RDV du ${entree.date_rdv}</b> (préparé par Claude, relu par ${entree.commercial})</p><p>${cr.resume}</p>`\n  + liste('Besoins', cr.besoins) + liste('Objections', cr.objections) + liste('Décideurs', cr.decideurs)\n  + (cr.budget ? `<p><b>Budget</b> : ${cr.budget}</p>` : '') + `<p><b>Prochaine étape</b> : ${cr.prochaine_etape || 'à définir'}</p>`\n  + liste('À vérifier', cr.a_verifier);\nreturn [{ json: { ...entree, ...cr, note_html: note, relance_ms: relance.getTime(), relance_jour: relance.toISOString().slice(0, 10) } }];"
+      }
+    },
+    {
+      "id": "b64643dc-9678-586a-88e0-c6767809aae0",
+      "name": "HubSpot · retrouver le contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.hubspot_url }}/crm/v3/objects/contacts/search",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ filterGroups: [{ filters: [{ propertyName: 'email', operator: 'EQ', value: $json.email_contact }] }], properties: ['email', 'firstname', 'lastname', 'hubspot_owner_id'], limit: 1 }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-hubspot",
+          "name": "HubSpot (app privée)"
+        }
+      }
+    },
+    {
+      "id": "d27969dc-b697-5821-b3de-d5f9cd939006",
+      "name": "Contact trouvé ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c4d9d0bd-5478-5421-a701-fd24d55470a4",
+              "leftValue": "={{ $json.total }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "e2260d5f-1a86-5099-8742-844a7aad19fb",
+      "name": "HubSpot · ajouter la note",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.hubspot_url }}/crm/v3/objects/notes",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: new Date().toISOString(), hs_note_body: $('Lire le compte rendu').first().json.note_html }, associations: [{ to: { id: $('HubSpot · retrouver le contact').first().json.results[0].id }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 202 }] }] }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-hubspot",
+          "name": "HubSpot (app privée)"
+        }
+      }
+    },
+    {
+      "id": "cc05eb69-454a-5a4e-b3ee-1c449f44a3e6",
+      "name": "HubSpot · créer la tâche de relance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.hubspot_url }}/crm/v3/objects/tasks",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: $('Lire le compte rendu').first().json.relance_ms, hs_task_subject: 'Relance : ' + ($('Lire le compte rendu').first().json.prochaine_etape || 'suite du RDV'), hs_task_body: $('Lire le compte rendu').first().json.resume, hs_task_status: 'NOT_STARTED', hs_task_priority: 'MEDIUM', hubspot_owner_id: $('HubSpot · retrouver le contact').first().json.results[0].properties.hubspot_owner_id }, associations: [{ to: { id: $('HubSpot · retrouver le contact').first().json.results[0].id }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 204 }] }] }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-hubspot",
+          "name": "HubSpot (app privée)"
+        }
+      }
+    },
+    {
+      "id": "74fe3a65-e579-5027-bc14-aabbef65945e",
+      "name": "Slack · prévenir le commercial",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.slack_webhook }}",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: (() => { const c = $('Lire le compte rendu').first().json; return `:memo: CR du RDV avec ${c.email_contact} ajouté dans HubSpot, relance le ${c.relance_jour}.\\n${c.resume}\\nÉtape suggérée : *${c.etape_suggeree || 'à décider'}* (à valider par toi, rien n'est changé automatiquement).` + (c.a_verifier && c.a_verifier.length ? `\\nÀ vérifier : ${c.a_verifier.join(' ; ')}` : ''); })() }) }}"
+      }
+    },
+    {
+      "id": "773d1be0-e728-592e-9d1c-b09e6aa06b25",
+      "name": "Slack · contact introuvable",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        440
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.slack_webhook }}",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: (() => { const c = $('Lire le compte rendu').first().json; return `:warning: Aucun contact HubSpot pour ${c.email_contact}. Compte rendu à classer à la main :\\n${c.resume}`; })() }) }}"
+      }
+    },
+    {
+      "id": "8439b714-abcb-5c08-8574-c92371fc00b9",
+      "name": "Note ## Compte rendu de RDV →",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -300
+      ],
+      "parameters": {
+        "content": "## Compte rendu de RDV → HubSpot\nCas de démonstration, entreprise fictive **Nordlys**.\n\nL'outil d'enregistrement (Modjo, Fireflies, Teams…) envoie la transcription. Claude rédige le compte rendu, le workflow l'ajoute en note sur le contact, crée la tâche de relance et prévient le commercial.\n\nChoix volontaire : l'étape du pipeline est **suggérée**, jamais changée seule. Le commercial garde la main.",
+        "width": 640,
+        "height": 230,
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Transcription reçue": {
+      "main": [
+        [
+          {
+            "node": "Paramètres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paramètres": {
+      "main": [
+        [
+          {
+            "node": "Préparer la transcription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Préparer la transcription": {
+      "main": [
+        [
+          {
+            "node": "Claude · résumer le RDV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude · résumer le RDV": {
+      "main": [
+        [
+          {
+            "node": "Lire le compte rendu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lire le compte rendu": {
+      "main": [
+        [
+          {
+            "node": "HubSpot · retrouver le contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot · retrouver le contact": {
+      "main": [
+        [
+          {
+            "node": "Contact trouvé ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact trouvé ?": {
+      "main": [
+        [
+          {
+            "node": "HubSpot · ajouter la note",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack · contact introuvable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot · ajouter la note": {
+      "main": [
+        [
+          {
+            "node": "HubSpot · créer la tâche de relance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot · créer la tâche de relance": {
+      "main": [
+        [
+          {
+            "node": "Slack · prévenir le commercial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Paris"
+  },
+  "meta": {
+    "description": "Cas de démonstration, entreprise fictive (Nordlys). Portfolio d'Aymeric Frelaut : https://afrelaut.github.io"
+  },
+  "tags": [],
+  "pinData": {}
+}

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lead entrant : du formulaire à HubSpot, qualifié par Claude · Aymeric Frelaut</title>
+<meta name="description" content="Chaque demande du site est nettoyée, notée par Claude, rangée dans HubSpot sans doublon, et le bon commercial est prévenu en quelques secondes.">
+<meta property="og:title" content="Lead entrant : du formulaire à HubSpot, qualifié par Claude · cas pratique">
+<meta property="og:description" content="Chaque demande du site est nettoyée, notée par Claude, rangée dans HubSpot sans doublon, et le bon commercial est prévenu en quelques secondes.">
+<meta property="og:image" content="https://afrelaut.github.io/img/og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f5bff'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='700' font-size='15' fill='white' text-anchor='middle'%3EAF%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f7f5;--surface:#fff;--text:#15161a;--muted:#5c606b;--line:#e3e4e8;--accent:#2f5bff;--accent-soft:#e8edff;--fict:#8a5a00;--fict-soft:#fbf0d9;--ok:#12805c;--ok-soft:#e3f4ec;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1013;--surface:#17191e;--text:#ecedf0;--muted:#9a9fab;--line:#2a2d35;--accent:#7d97ff;--accent-soft:#1d2440;--fict:#e7b54f;--fict-soft:#2c2312;--ok:#4cc99a;--ok-soft:#13291f}}
+:root[data-theme="dark"]{--bg:#0f1013;--surface:#17191e;--text:#ecedf0;--muted:#9a9fab;--line:#2a2d35;--accent:#7d97ff;--accent-soft:#1d2440;--fict:#e7b54f;--fict-soft:#2c2312;--ok:#4cc99a;--ok-soft:#13291f}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,system-ui,-apple-system,sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+nav{border-bottom:1px solid var(--line);background:var(--bg)}nav .wrap{display:flex;justify-content:space-between;align-items:center;height:52px;gap:12px;font-size:14px}
+nav b{color:var(--text)}
+header{padding:40px 0 24px}
+.tag{display:inline-block;font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-radius:6px;background:var(--fict-soft);color:var(--fict);margin-bottom:14px}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.12;margin:0 0 12px;letter-spacing:-.02em}
+.lead{font-size:18px;color:var(--muted);margin:0;max-width:720px}
+.cible{font:500 13px var(--mono);color:var(--accent);margin:0 0 10px}
+section{padding:26px 0;border-top:1px solid var(--line)}
+h2{font-size:21px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.box h3{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+.box p{margin:0}
+ol.steps{margin:0;padding-left:22px}ol.steps li{margin-bottom:8px}
+ul{margin:0;padding-left:20px}li{margin-bottom:6px}
+figure{margin:0}figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px;background:#fafafa}
+figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.slack{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:14px 16px;font-size:14.5px;white-space:pre-wrap}
+.slack b{font-weight:600}
+pre{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font:12.5px/1.55 var(--mono);white-space:pre-wrap;margin:0}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.btn{display:inline-flex;align-items:center;padding:10px 16px;border-radius:8px;font-weight:600;font-size:15px;border:1px solid var(--line);background:var(--surface);color:var(--text)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn:hover{text-decoration:none;filter:brightness(1.05)}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.tool{font:12px/1 var(--mono);padding:5px 8px;border-radius:6px;background:var(--accent-soft)}
+table{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{text-align:left;padding:9px 12px;border-top:1px solid var(--line);vertical-align:top}th{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-top:0;background:var(--bg)}
+.tablewrap{overflow-x:auto}
+.pipe{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13.5px}.pipe span{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}.pipe span.off{opacity:.55;text-decoration:line-through}
+footer{padding:30px 0 50px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+@media (max-width:700px){.grid{grid-template-columns:1fr}.lead{font-size:17px}}
+</style>
+</head>
+<body>
+<nav><div class="wrap"><a href="../../"><b>Aymeric Frelaut</b></a><a href="../../#cas">← Tous les cas pratiques</a></div></nav>
+<header><div class="wrap">
+<span class="tag">Cas de démonstration · entreprise fictive</span>
+<p class="cible">Sales Ops · CRM · n8n · Claude</p>
+<h1>Lead entrant : du formulaire à HubSpot, qualifié par Claude</h1>
+<p class="lead">Chaque demande du site est nettoyée, notée par Claude, rangée dans HubSpot sans doublon, et le bon commercial est prévenu en quelques secondes.</p>
+<div class="tools"><span class="tool">n8n</span><span class="tool">HubSpot API</span><span class="tool">Claude (API Anthropic)</span><span class="tool">Slack</span></div>
+</div></header>
+<main class="wrap">
+<section><div class="grid">
+<div class="box"><h3>Le problème</h3><p>Les demandes du site arrivent par email, sont ressaisies à la main dans HubSpot, et les commerciaux rappellent souvent le lendemain. Les bons leads attendent autant que les mauvais.</p></div>
+<div class="box"><h3>Ce que ça change</h3><p>Zéro ressaisie, des fiches HubSpot propres (clé unique : l'email), et les leads chauds traités en premier par le commercial du bon segment.</p></div>
+</div></section>
+<section><h2>Le workflow dans n8n</h2>
+<figure><a href="../../img/cas/n8n-lead-entrant.webp" target="_blank" rel="noopener" title="Ouvrir en grand"><img src="../../img/cas/n8n-lead-entrant.webp" alt="Le workflow « Lead entrant : du formulaire à HubSpot, qualifié par Claude » dans l'éditeur n8n" width="2400" height="745" loading="lazy"></a><figcaption>Capture de l'éditeur n8n, workflow importé tel quel. Cliquer pour agrandir.</figcaption></figure>
+<ol class="steps" style="margin-top:18px"><li>Le formulaire du site envoie la demande au <b>webhook</b>.</li><li>Le lead est <b>nettoyé</b> : email en minuscules, téléphone normalisé, adresses perso repérées (Gmail, Orange…), emails invalides écartés.</li><li><b>Claude</b> note le lead de 0 à 100 selon le client idéal et écrit un résumé de 2 phrases pour le commercial.</li><li>Le contact est <b>créé ou mis à jour</b> dans HubSpot (upsert sur l'email : jamais de doublon), avec le score et le résumé.</li><li>Lead chaud (score ≥ 70) : <b>transaction</b> créée et <b>alerte Slack</b> au commercial du segment. Sinon : nurturing, sans alerte.</li></ol>
+</section>
+<section><h2>Ce que reçoit l'équipe</h2>
+<div class="slack">🔥 Lead chaud pour <b>Léa</b> (score 82/100)
+<b>Claire Martin</b>, Directrice des opérations chez Clinique du Parc
+Directrice des opérations d'une clinique de 250 salariés, cherche à remplacer les plannings Excel des blocs. Demande une démo.
+Fiche : https://app.hubspot.com/contacts/…/record/0-1/901</div>
+<p style="color:var(--muted);font-size:14px;margin:8px 0 0">Message réel produit pendant le test, avec des données fictives.</p>
+</section>
+<section><h2>Mes choix</h2><ul><li>L'IA propose, des règles encadrent : un email perso plafonne le score à 40, quoi que dise Claude.</li><li>Si Claude ne répond pas, le lead entre quand même dans HubSpot, marqué « à qualifier à la main ». On ne perd jamais un lead.</li><li>Le routage (petits comptes / grands comptes) et les seuils sont dans un seul nœud <b>Paramètres</b> : un Sales Ops peut les changer sans toucher au reste.</li></ul></section>
+<section><h2>La consigne donnée à Claude</h2><pre>Tâche : qualification_lead.
+Tu qualifies les leads entrants de Nordlys, éditeur d&#x27;un logiciel de planning pour cliniques et centres médicaux.
+Client idéal : cliniques privées, centres de santé et groupes de soins de 50 à 2 000 salariés en France ; contacts directeur, DSI, responsable des opérations ou cadre de santé ; besoin de planning du personnel ou des blocs.
+Hors cible : particuliers, étudiants, cabinets d&#x27;une personne, concurrents, fournisseurs.
+Réponds UNIQUEMENT par un objet JSON : {&quot;score&quot;: entier 0-100, &quot;segment&quot;: &quot;clinique&quot;|&quot;centre_de_sante&quot;|&quot;groupe&quot;|&quot;hors_cible&quot;, &quot;taille_estimee&quot;: texte court ou null, &quot;besoin&quot;: texte court, &quot;resume&quot;: 2 phrases en français pour le commercial, &quot;action&quot;: &quot;appeler_aujourdhui&quot;|&quot;nurturing&quot;|&quot;ignorer&quot;}.
+N&#x27;invente rien : si une information manque, écris null et baisse le score.</pre></section>
+<section><h2>Le récupérer</h2>
+<div class="grid">
+<div class="box"><h3>Installer en 3 étapes</h3><ol class="steps"><li>Dans n8n : Importer depuis un fichier, choisir le JSON.</li><li>Créer les identifiants demandés (clé API Anthropic, jeton d'app privée HubSpot ; un webhook Slack).</li><li>Adapter le nœud <b>Paramètres</b>, puis activer.</li></ol></div>
+<div class="box"><h3>Testé</h3><p>Importé et exécuté dans n8n 2.47, avec de faux services HubSpot, Claude et Slack. Les tests automatiques sont dans le dépôt.</p></div>
+</div>
+<div class="btns" style="margin-top:16px"><a class="btn primary" href="../n8n/nordlys-lead-entrant.json" download>Télécharger le workflow (JSON)</a><a class="btn" href="https://github.com/afrelaut/afrelaut.github.io/tree/main/cas" target="_blank" rel="noopener">Code et tests</a></div>
+</section>
+</main>
+<footer><div class="wrap">Cas de démonstration : <b>Nordlys</b> est une entreprise fictive, les données et les personnes aussi. Les workflows, eux, sont réels.
+<div class="btns" style="margin-top:14px"><a class="btn primary" href="mailto:afrelaut@gmail.com">Me contacter</a><a class="btn" href="https://www.linkedin.com/in/aymeric-frelaut" target="_blank" rel="noopener">LinkedIn</a><a class="btn" href="../../">Retour au portfolio</a></div></div></footer>
+</body>
+</html>

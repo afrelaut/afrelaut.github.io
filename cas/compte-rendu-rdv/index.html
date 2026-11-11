@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compte rendu de RDV : de la transcription au CRM · Aymeric Frelaut</title>
+<meta name="description" content="Après un rendez-vous, Claude rédige le compte rendu, le workflow le range dans HubSpot et crée la relance. Le commercial n&#x27;a plus qu&#x27;à relire.">
+<meta property="og:title" content="Compte rendu de RDV : de la transcription au CRM · cas pratique">
+<meta property="og:description" content="Après un rendez-vous, Claude rédige le compte rendu, le workflow le range dans HubSpot et crée la relance. Le commercial n&#x27;a plus qu&#x27;à relire.">
+<meta property="og:image" content="https://afrelaut.github.io/img/og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f5bff'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='700' font-size='15' fill='white' text-anchor='middle'%3EAF%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f7f5;--surface:#fff;--text:#15161a;--muted:#5c606b;--line:#e3e4e8;--accent:#2f5bff;--accent-soft:#e8edff;--fict:#8a5a00;--fict-soft:#fbf0d9;--ok:#12805c;--ok-soft:#e3f4ec;--mono:"JetBrains Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1013;--surface:#17191e;--text:#ecedf0;--muted:#9a9fab;--line:#2a2d35;--accent:#7d97ff;--accent-soft:#1d2440;--fict:#e7b54f;--fict-soft:#2c2312;--ok:#4cc99a;--ok-soft:#13291f}}
+:root[data-theme="dark"]{--bg:#0f1013;--surface:#17191e;--text:#ecedf0;--muted:#9a9fab;--line:#2a2d35;--accent:#7d97ff;--accent-soft:#1d2440;--fict:#e7b54f;--fict-soft:#2c2312;--ok:#4cc99a;--ok-soft:#13291f}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,system-ui,-apple-system,sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+nav{border-bottom:1px solid var(--line);background:var(--bg)}nav .wrap{display:flex;justify-content:space-between;align-items:center;height:52px;gap:12px;font-size:14px}
+nav b{color:var(--text)}
+header{padding:40px 0 24px}
+.tag{display:inline-block;font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:6px 9px;border-radius:6px;background:var(--fict-soft);color:var(--fict);margin-bottom:14px}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+h1{font-size:clamp(28px,5vw,40px);line-height:1.12;margin:0 0 12px;letter-spacing:-.02em}
+.lead{font-size:18px;color:var(--muted);margin:0;max-width:720px}
+.cible{font:500 13px var(--mono);color:var(--accent);margin:0 0 10px}
+section{padding:26px 0;border-top:1px solid var(--line)}
+h2{font-size:21px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.box h3{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+.box p{margin:0}
+ol.steps{margin:0;padding-left:22px}ol.steps li{margin-bottom:8px}
+ul{margin:0;padding-left:20px}li{margin-bottom:6px}
+figure{margin:0}figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px;background:#fafafa}
+figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.slack{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:14px 16px;font-size:14.5px;white-space:pre-wrap}
+.slack b{font-weight:600}
+pre{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font:12.5px/1.55 var(--mono);white-space:pre-wrap;margin:0}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.btn{display:inline-flex;align-items:center;padding:10px 16px;border-radius:8px;font-weight:600;font-size:15px;border:1px solid var(--line);background:var(--surface);color:var(--text)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn:hover{text-decoration:none;filter:brightness(1.05)}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}.tool{font:12px/1 var(--mono);padding:5px 8px;border-radius:6px;background:var(--accent-soft)}
+table{width:100%;border-collapse:collapse;font-size:14.5px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{text-align:left;padding:9px 12px;border-top:1px solid var(--line);vertical-align:top}th{font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-top:0;background:var(--bg)}
+.tablewrap{overflow-x:auto}
+.pipe{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13.5px}.pipe span{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}.pipe span.off{opacity:.55;text-decoration:line-through}
+footer{padding:30px 0 50px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+@media (max-width:700px){.grid{grid-template-columns:1fr}.lead{font-size:17px}}
+</style>
+</head>
+<body>
+<nav><div class="wrap"><a href="../../"><b>Aymeric Frelaut</b></a><a href="../../#cas">← Tous les cas pratiques</a></div></nav>
+<header><div class="wrap">
+<span class="tag">Cas de démonstration · entreprise fictive</span>
+<p class="cible">Consultant IA · adoption de Claude · CRM</p>
+<h1>Compte rendu de RDV : de la transcription au CRM</h1>
+<p class="lead">Après un rendez-vous, Claude rédige le compte rendu, le workflow le range dans HubSpot et crée la relance. Le commercial n'a plus qu'à relire.</p>
+<div class="tools"><span class="tool">n8n</span><span class="tool">Claude (API Anthropic)</span><span class="tool">HubSpot API</span><span class="tool">Slack</span></div>
+</div></header>
+<main class="wrap">
+<section><div class="grid">
+<div class="box"><h3>Le problème</h3><p>Les comptes rendus sont écrits tard, ou pas du tout. Le CRM ne dit plus où en est chaque affaire, et les relances se perdent.</p></div>
+<div class="box"><h3>Ce que ça change</h3><p>Chaque RDV laisse une note structurée (besoins, objections, décideurs, prochaine étape) et une tâche de relance datée, sans effort de saisie.</p></div>
+</div></section>
+<section><h2>Le workflow dans n8n</h2>
+<figure><a href="../../img/cas/n8n-compte-rendu-rdv.webp" target="_blank" rel="noopener" title="Ouvrir en grand"><img src="../../img/cas/n8n-compte-rendu-rdv.webp" alt="Le workflow « Compte rendu de RDV : de la transcription au CRM » dans l'éditeur n8n" width="2400" height="745" loading="lazy"></a><figcaption>Capture de l'éditeur n8n, workflow importé tel quel. Cliquer pour agrandir.</figcaption></figure>
+<ol class="steps" style="margin-top:18px"><li>L'outil d'enregistrement d'appels (Modjo, Fireflies, Teams…) envoie la <b>transcription</b> et l'email du contact.</li><li><b>Claude</b> en tire un compte rendu structuré, sans rien inventer, avec la liste des points à vérifier.</li><li>Le workflow <b>retrouve le contact</b> dans HubSpot par son email.</li><li>Il ajoute la <b>note</b> sur la fiche et crée la <b>tâche de relance</b> à la date dite pendant l'appel (7 jours par défaut).</li><li>Le commercial reçoit un <b>résumé Slack</b>. Contact introuvable : rien n'est écrit, le CR part en alerte pour être classé à la main.</li></ol>
+</section>
+<section><h2>Ce que reçoit l'équipe</h2>
+<div class="slack">📝 CR du RDV avec claire@… ajouté dans HubSpot, relance le 2026-11-16.
+Clinique intéressée par le module blocs. Planning actuel sous Excel, 3 h perdues par semaine.
+Étape suggérée : <b>demo</b> (à valider par toi, rien n'est changé automatiquement).
+À vérifier : Nom du logiciel RH</div>
+<p style="color:var(--muted);font-size:14px;margin:8px 0 0">Message réel produit pendant le test, avec des données fictives.</p>
+</section>
+<section><h2>Mes choix</h2><ul><li>L'étape du pipeline est <b>suggérée</b>, jamais changée seule : le commercial reste maître de son forecast.</li><li>Claude liste ce qui est flou (« à vérifier ») au lieu de deviner. C'est ce qui rend l'outil digne de confiance pour l'équipe.</li><li>Aucune écriture dans HubSpot si le contact n'est pas certain : mieux vaut une alerte qu'une note sur la mauvaise fiche.</li></ul></section>
+<section><h2>La consigne donnée à Claude</h2><pre>Tâche : compte_rendu_rdv.
+Tu lis la transcription d&#x27;un rendez-vous commercial de Nordlys (logiciel de planning pour cliniques) et tu prépares la mise à jour du CRM.
+Réponds UNIQUEMENT par un objet JSON : {&quot;resume&quot;: 5 lignes maximum en français, &quot;besoins&quot;: [textes], &quot;objections&quot;: [textes], &quot;decideurs&quot;: [&quot;Nom, rôle&quot;], &quot;budget&quot;: texte ou null, &quot;prochaine_etape&quot;: texte, &quot;date_relance&quot;: &quot;AAAA-MM-JJ&quot; ou null, &quot;etape_suggeree&quot;: &quot;decouverte&quot;|&quot;demo&quot;|&quot;proposition&quot;|&quot;negociation&quot;|&quot;perdu&quot;, &quot;a_verifier&quot;: [points flous à confirmer]}.
+N&#x27;invente rien : uniquement ce qui est dit dans la transcription. Si une information manque, null ou liste vide.</pre></section>
+<section><h2>Le récupérer</h2>
+<div class="grid">
+<div class="box"><h3>Installer en 3 étapes</h3><ol class="steps"><li>Dans n8n : Importer depuis un fichier, choisir le JSON.</li><li>Créer les identifiants demandés (clé API Anthropic, jeton d'app privée HubSpot ; un webhook Slack).</li><li>Adapter le nœud <b>Paramètres</b>, puis activer.</li></ol></div>
+<div class="box"><h3>Testé</h3><p>Importé et exécuté dans n8n 2.47, avec de faux services HubSpot, Claude et Slack. Les tests automatiques sont dans le dépôt.</p></div>
+</div>
+<div class="btns" style="margin-top:16px"><a class="btn primary" href="../n8n/nordlys-compte-rendu-rdv.json" download>Télécharger le workflow (JSON)</a><a class="btn" href="https://github.com/afrelaut/afrelaut.github.io/tree/main/cas" target="_blank" rel="noopener">Code et tests</a></div>
+</section>
+</main>
+<footer><div class="wrap">Cas de démonstration : <b>Nordlys</b> est une entreprise fictive, les données et les personnes aussi. Les workflows, eux, sont réels.
+<div class="btns" style="margin-top:14px"><a class="btn primary" href="mailto:afrelaut@gmail.com">Me contacter</a><a class="btn" href="https://www.linkedin.com/in/aymeric-frelaut" target="_blank" rel="noopener">LinkedIn</a><a class="btn" href="../../">Retour au portfolio</a></div></div></footer>
+</body>
+</html>

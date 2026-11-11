@@ -1,0 +1,401 @@
+{
+  "name": "Nordlys · Lead entrant → HubSpot (cas fictif)",
+  "nodes": [
+    {
+      "id": "9ce6fb00-1bda-5ca1-9cfe-7e4831ae2484",
+      "name": "Formulaire du site",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nordlys-lead",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "webhookId": "nordlys-lead"
+    },
+    {
+      "id": "c3cda5ad-634f-5ef2-816e-8f018df156bb",
+      "name": "Paramètres",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Paramètres du workflow : la seule partie à adapter.\nreturn [{ json: {\n  hubspot_url: 'https://api.hubapi.com',\n  hubspot_portal_id: '0000000',            // pour les liens vers les fiches\n  anthropic_url: 'https://api.anthropic.com',\n  modele_claude: 'claude-haiku-5-5',\n  slack_webhook: 'https://hooks.slack.com/services/A_REMPLACER',\n  seuil_alerte: 70,                       // score à partir duquel on crée une transaction et on alerte\n  seuil_grand_compte: 500,                // effectif à partir duquel le lead va aux grands comptes\n  commerciaux: { petits_comptes: { nom: 'Léa', owner_id: '111' }, grands_comptes: { nom: 'Hugo', owner_id: '222' } },\n}}];"
+      }
+    },
+    {
+      "id": "6cd0f495-8e78-561d-9a32-a39c90500b96",
+      "name": "Nettoyer le lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        300
+      ],
+      "parameters": {
+        "jsCode": "// Nettoie la saisie du formulaire et repère les emails inutilisables.\nconst f = $('Formulaire du site').first().json.body || {};\nconst email = String(f.email || '').trim().toLowerCase();\nconst domaine = email.split('@')[1] || '';\nconst gratuits = ['gmail.com', 'yahoo.fr', 'hotmail.com', 'outlook.fr', 'outlook.com', 'orange.fr', 'free.fr', 'laposte.net', 'icloud.com'];\nconst [prenom, ...reste] = String(f.nom_complet || f.nom || '').trim().split(/\\s+/);\nreturn [{ json: {\n  email, domaine,\n  email_valide: /^[^@\\s]+@[^@\\s]+\\.[a-z]{2,}$/.test(email),\n  email_perso: gratuits.includes(domaine),\n  prenom: prenom || '', nom: reste.join(' '),\n  entreprise: String(f.entreprise || '').trim(),\n  poste: String(f.poste || '').trim(),\n  telephone: String(f.telephone || '').replace(/[^+\\d]/g, ''),\n  message: String(f.message || '').slice(0, 2000),\n}}];"
+      }
+    },
+    {
+      "id": "a52c25ab-0b8c-5d15-bf90-7c4ee79eb0b9",
+      "name": "Email valide ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        660,
+        300
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "b9846f13-9a1f-5b1d-ab33-c9386d65a934",
+              "leftValue": "={{ $json.email_valide }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "434e5702-502e-5e9a-8e16-e91a7b71d43a",
+      "name": "Lead rejeté",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        880,
+        480
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "75e88067-aabd-5f19-9938-fd009d9185d0",
+      "name": "Claude · qualifier le lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.anthropic_url }}/v1/messages",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $('Paramètres').first().json.modele_claude, max_tokens: 600, system: \"Tâche : qualification_lead.\\nTu qualifies les leads entrants de Nordlys, éditeur d'un logiciel de planning pour cliniques et centres médicaux.\\nClient idéal : cliniques privées, centres de santé et groupes de soins de 50 à 2 000 salariés en France ; contacts directeur, DSI, responsable des opérations ou cadre de santé ; besoin de planning du personnel ou des blocs.\\nHors cible : particuliers, étudiants, cabinets d'une personne, concurrents, fournisseurs.\\nRéponds UNIQUEMENT par un objet JSON : {\\\"score\\\": entier 0-100, \\\"segment\\\": \\\"clinique\\\"|\\\"centre_de_sante\\\"|\\\"groupe\\\"|\\\"hors_cible\\\", \\\"taille_estimee\\\": texte court ou null, \\\"besoin\\\": texte court, \\\"resume\\\": 2 phrases en français pour le commercial, \\\"action\\\": \\\"appeler_aujourdhui\\\"|\\\"nurturing\\\"|\\\"ignorer\\\"}.\\nN'invente rien : si une information manque, écris null et baisse le score.\", messages: [{ role: 'user', content: JSON.stringify($('Nettoyer le lead').first().json) }] }) }}"
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-anthropic",
+          "name": "Anthropic (clé API)"
+        }
+      }
+    },
+    {
+      "id": "77aa46cf-8dfa-504c-b6ce-7617b12b9a5f",
+      "name": "Lire la qualification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Lit la réponse de Claude (texte JSON) et la rend exploitable.\nfunction lireJson(reponse) {\n  const texte = (reponse.content || []).filter(b => b.type === 'text').map(b => b.text).join('');\n  const debut = texte.indexOf('{'), fin = texte.lastIndexOf('}');\n  if (debut < 0 || fin < debut) return null;\n  try { return JSON.parse(texte.slice(debut, fin + 1)); } catch (e) { return null; }\n}\n\nconst lead = $('Nettoyer le lead').first().json;\nconst q = lireJson($input.first().json) || { score: null, resume: 'Qualification IA indisponible : à qualifier à la main.', action: 'nurturing', segment: null };\n// Garde-fou : l'IA propose, des règles simples encadrent.\nconst p = $('Paramètres').first().json;\nlet score = Math.max(0, Math.min(100, Number(q.score) || 0));\nif (lead.email_perso) score = Math.min(score, 40);\nconst effectif = parseInt(String(q.taille_estimee || '').replace(/\\s/g, '').match(/\\d+/)?.[0] || '0', 10);\nconst grand = q.segment === 'groupe' || effectif >= p.seuil_grand_compte;\nconst commercial = grand ? p.commerciaux.grands_comptes : p.commerciaux.petits_comptes;\nreturn [{ json: { ...lead, ...q, score, commercial, chaud: score >= p.seuil_alerte } }];"
+      }
+    },
+    {
+      "id": "34987b7c-65e6-5802-9558-953cfb020ecf",
+      "name": "HubSpot · créer ou mettre à jour le contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.hubspot_url }}/crm/v3/objects/contacts/batch/upsert",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputs: [{ idProperty: 'email', id: $json.email, properties: { email: $json.email, firstname: $json.prenom, lastname: $json.nom, company: $json.entreprise, jobtitle: $json.poste, phone: $json.telephone, lifecyclestage: 'lead', hs_lead_status: 'NEW', hubspot_owner_id: $json.commercial.owner_id, nordlys_score_ia: $json.score, nordlys_resume_ia: $json.resume } }] }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-hubspot",
+          "name": "HubSpot (app privée)"
+        }
+      }
+    },
+    {
+      "id": "091a9eb9-dc71-540e-9f89-3c2413710f18",
+      "name": "Lead chaud ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "8ad6ef54-7c20-5d39-ba05-71f4d45f9183",
+              "leftValue": "={{ $('Lire la qualification').first().json.chaud }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      }
+    },
+    {
+      "id": "d3021170-9d90-5667-bda6-5d5510ad148b",
+      "name": "HubSpot · créer la transaction",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.hubspot_url }}/crm/v3/objects/deals",
+        "options": {},
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { dealname: ($('Lire la qualification').first().json.entreprise || $('Lire la qualification').first().json.domaine) + ' · lead entrant', pipeline: 'default', dealstage: 'appointmentscheduled', hubspot_owner_id: $('Lire la qualification').first().json.commercial.owner_id }, associations: [{ to: { id: $('HubSpot · créer ou mettre à jour le contact').first().json.results[0].id }, types: [{ associationCategory: 'HUBSPOT_DEFINED', associationTypeId: 3 }] }] }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nordlys-hubspot",
+          "name": "HubSpot (app privée)"
+        }
+      }
+    },
+    {
+      "id": "52161435-ec0c-51b9-a958-8589a0cc9bf1",
+      "name": "Slack · alerter le commercial",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Paramètres').first().json.slack_webhook }}",
+        "options": {},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: (() => { const l = $('Lire la qualification').first().json; const p = $('Paramètres').first().json; return `:fire: Lead chaud pour ${l.commercial.nom} (score ${l.score}/100)\\n*${l.prenom} ${l.nom}*, ${l.poste} chez ${l.entreprise}\\n${l.resume}\\nFiche : https://app.hubspot.com/contacts/${p.hubspot_portal_id}/record/0-1/${$('HubSpot · créer ou mettre à jour le contact').first().json.results[0].id}`; })() }) }}"
+      }
+    },
+    {
+      "id": "dbabb3f0-c042-50db-ac00-dce926894084",
+      "name": "Nurturing (pas d'alerte)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        320
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "f43e3c89-f4e1-5c20-a6fb-d1984294b758",
+      "name": "Note ## Lead entrant → HubSpo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -300
+      ],
+      "parameters": {
+        "content": "## Lead entrant → HubSpot\nCas de démonstration, entreprise fictive **Nordlys**.\n\n1. Le formulaire du site arrive ici.\n2. Nettoyage + emails perso repérés.\n3. Claude score le lead (0-100) selon le client idéal.\n4. Contact créé ou mis à jour dans HubSpot (sans doublon : clé = email).\n5. Lead chaud : transaction + alerte Slack au bon commercial.\n\nÀ adapter : le nœud **Paramètres** et les 2 identifiants (Anthropic, HubSpot).",
+        "width": 640,
+        "height": 230,
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Formulaire du site": {
+      "main": [
+        [
+          {
+            "node": "Paramètres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paramètres": {
+      "main": [
+        [
+          {
+            "node": "Nettoyer le lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nettoyer le lead": {
+      "main": [
+        [
+          {
+            "node": "Email valide ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email valide ?": {
+      "main": [
+        [
+          {
+            "node": "Claude · qualifier le lead",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Lead rejeté",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude · qualifier le lead": {
+      "main": [
+        [
+          {
+            "node": "Lire la qualification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lire la qualification": {
+      "main": [
+        [
+          {
+            "node": "HubSpot · créer ou mettre à jour le contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot · créer ou mettre à jour le contact": {
+      "main": [
+        [
+          {
+            "node": "Lead chaud ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lead chaud ?": {
+      "main": [
+        [
+          {
+            "node": "HubSpot · créer la transaction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Nurturing (pas d'alerte)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot · créer la transaction": {
+      "main": [
+        [
+          {
+            "node": "Slack · alerter le commercial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Paris"
+  },
+  "meta": {
+    "description": "Cas de démonstration, entreprise fictive (Nordlys). Portfolio d'Aymeric Frelaut : https://afrelaut.github.io"
+  },
+  "tags": [],
+  "pinData": {}
+}
