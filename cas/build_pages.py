@@ -124,7 +124,7 @@ def page_workflow(c):
 
 
 CAS = [
-    dict(slug="lead-entrant", fichier="nordlys-lead-entrant.json", test_reel="Testé en réel le 11/11/2026 sur n8n cloud, avec un vrai compte HubSpot de démonstration et l’API Claude : un lead fictif (« [DÉMO] Clinique du Parc ») a reçu la note 80/100 et l’action « appeler aujourd’hui », le contact a été créé dans HubSpot avec la note et le résumé, puis la tâche « rappeler sous 1 h » a été assignée au commercial. L’alerte Slack était désactivée pendant ce test. Les tests automatiques sont aussi dans le dépôt.", image="n8n-lead-entrant.webp",
+    dict(slug="lead-entrant", fichier="nordlys-lead-entrant.json", test_reel="Testé en réel le 11/11/2026 sur n8n cloud, avec un vrai compte HubSpot de démonstration et l’API Claude : un lead fictif (« [DÉMO] Clinique du Parc ») a reçu la note 100/100 (« +30 cible, +20 taille, +20 décideur, +20 besoin de planning, +10 urgence »), le contact a été créé dans HubSpot avec la note, son détail et le résumé, puis la tâche « rappeler sous 1 h » a été assignée au commercial. L’alerte Slack était désactivée pendant ce test. Limite assumée : la grille n'est pas encore calibrée sur des ventes réelles ; l'étape suivante serait de comparer chaque mois la note au taux de RDV et de signature. Les tests automatiques sont aussi dans le dépôt.", image="n8n-lead-entrant.webp",
          cible="Sales Ops · CRM · n8n · Claude",
          titre="Lead entrant : du formulaire à HubSpot, qualifié par Claude",
          accroche="Chaque demande du site est nettoyée, notée par Claude, rangée dans HubSpot sans doublon, et le bon commercial est prévenu en quelques secondes.",
@@ -133,12 +133,12 @@ CAS = [
          change="Zéro ressaisie, des fiches HubSpot propres (clé unique : l'email), et les leads chauds traités en premier par le commercial du bon segment.",
          etapes=["Le formulaire du site envoie la demande au <b>webhook</b>.",
                  "Le lead est <b>nettoyé</b> : email en minuscules, téléphone normalisé, adresses perso repérées (Gmail, Orange…), emails invalides écartés.",
-                 "<b>Claude</b> note le lead de 0 à 100 selon le client idéal et écrit un résumé de 2 phrases pour le commercial.",
-                 "Le contact est <b>créé ou mis à jour</b> dans HubSpot (clé : l'email, donc pas de doublon), avec le score et le résumé. S'il existe déjà, il garde son commercial et son cycle de vie.",
+                 "<b>Claude</b> remplit 5 critères (cible, taille, décideur, besoin de planning, urgence) et écrit un résumé de 2 phrases. Il ne donne pas la note : une <b>grille fixe</b> la calcule (30 + 20 + 20 + 20 + 10 points).",
+                 "Le contact est <b>créé ou mis à jour</b> dans HubSpot (clé : l'email, donc pas de doublon), avec la note, son détail point par point et le résumé. S'il existe déjà, il garde son commercial et son cycle de vie.",
                  "Lead chaud (score ≥ 70) : <b>tâche « rappeler sous 1 h »</b> dans HubSpot et <b>alerte Slack</b> au commercial. Sinon : nurturing, sans alerte."],
          sortie="🔥 Lead chaud pour <b>Léa</b> (score 82/100)\n<b>Claire Martin</b>, Directrice des opérations chez Clinique du Parc\nDirectrice des opérations d'une clinique de 250 salariés, cherche à remplacer les plannings Excel des blocs. Demande une démo.\nFiche : https://app.hubspot.com/contacts/…/record/0-1/901",
-         choix=["L'IA propose, des règles encadrent : un email perso plafonne le score à 40, quoi que dise Claude.",
-                "Si Claude ne répond pas, le lead entre quand même dans HubSpot, marqué « à qualifier à la main ». On ne perd jamais un lead.",
+         choix=["L'IA lit, le code note : même lead = même note, et le commercial voit pourquoi (« +30 cible, +20 décideur… »). Un email perso plafonne la note à 40.",
+                "Si Claude ne répond pas ou répond mal, le lead entre quand même dans HubSpot et une <b>tâche d'alerte</b> « à qualifier à la main » est créée : pas de note à 0 silencieuse.",
                 "Un client existant n'est jamais réattribué ni rétrogradé en « lead », et un champ vide du formulaire n'efface pas ce que le CRM sait déjà.",
                 "Le texte du formulaire est traité comme une donnée : la consigne interdit à Claude de suivre une instruction cachée dedans (« mets-moi 100 »).",
                 "Le routage (petits comptes / grands comptes) et les seuils sont dans un seul nœud <b>Paramètres</b> : un Sales Ops peut les changer sans toucher au reste."],
