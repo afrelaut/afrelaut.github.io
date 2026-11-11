@@ -91,7 +91,7 @@ N&#x27;invente rien : si une information manque, écris null et baisse le score.
 <section><h2>Le récupérer</h2>
 <div class="grid">
 <div class="box"><h3>Installer en 3 étapes</h3><ol class="steps"><li>Dans n8n : Importer depuis un fichier, choisir le JSON.</li><li>Créer les identifiants demandés (clé API Anthropic, jeton d'app privée HubSpot ; un webhook Slack ; 2 propriétés HubSpot : nordlys_score_ia, nordlys_resume_ia).</li><li>Adapter le nœud <b>Paramètres</b>, puis activer.</li></ol></div>
-<div class="box"><h3>Testé</h3><p>Importé et exécuté dans n8n 2.47, avec de faux services HubSpot, Claude et Slack. Les tests automatiques sont dans le dépôt.</p></div>
+<div class="box"><h3>Testé</h3><p>Testé en réel le 11/11/2026 sur n8n cloud, avec un vrai compte HubSpot de démonstration et l’API Claude : un lead fictif (« [DÉMO] Clinique du Parc ») a reçu la note 80/100 et l’action « appeler aujourd’hui », le contact a été créé dans HubSpot avec la note et le résumé, puis la tâche « rappeler sous 1 h » a été assignée au commercial. L’alerte Slack était désactivée pendant ce test. Les tests automatiques sont aussi dans le dépôt.</p></div>
 </div>
 <div class="btns" style="margin-top:16px"><a class="btn primary" href="../n8n/nordlys-lead-entrant.json" download>Télécharger le workflow (JSON)</a><a class="btn" href="https://github.com/afrelaut/afrelaut.github.io/tree/main/cas" target="_blank" rel="noopener">Code et tests</a></div>
 </section>

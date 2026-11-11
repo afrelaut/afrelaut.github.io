@@ -114,7 +114,7 @@ def page_workflow(c):
 <section><h2>Le récupérer</h2>
 <div class="grid">
 <div class="box"><h3>Installer en 3 étapes</h3><ol class="steps"><li>Dans n8n : Importer depuis un fichier, choisir le JSON.</li><li>Créer les identifiants demandés ({c['identifiants']}).</li><li>Adapter le nœud <b>Paramètres</b>, puis activer.</li></ol></div>
-<div class="box"><h3>Testé</h3><p>Importé et exécuté dans n8n 2.47, avec de faux services HubSpot, Claude et Slack. Les tests automatiques sont dans le dépôt.</p></div>
+<div class="box"><h3>Testé</h3><p>{c.get('test_reel') or 'Importé et exécuté dans n8n 2.47, avec de faux services HubSpot, Claude et Slack. Les tests automatiques sont dans le dépôt.'}</p></div>
 </div>
 <div class="btns" style="margin-top:16px"><a class="btn primary" href="../n8n/{c['fichier']}" download>Télécharger le workflow (JSON)</a><a class="btn" href="https://github.com/afrelaut/afrelaut.github.io/tree/main/cas" target="_blank" rel="noopener">Code et tests</a></div>
 </section>
@@ -124,7 +124,7 @@ def page_workflow(c):
 
 
 CAS = [
-    dict(slug="lead-entrant", fichier="nordlys-lead-entrant.json", image="n8n-lead-entrant.webp",
+    dict(slug="lead-entrant", fichier="nordlys-lead-entrant.json", test_reel="Testé en réel le 11/11/2026 sur n8n cloud, avec un vrai compte HubSpot de démonstration et l’API Claude : un lead fictif (« [DÉMO] Clinique du Parc ») a reçu la note 80/100 et l’action « appeler aujourd’hui », le contact a été créé dans HubSpot avec la note et le résumé, puis la tâche « rappeler sous 1 h » a été assignée au commercial. L’alerte Slack était désactivée pendant ce test. Les tests automatiques sont aussi dans le dépôt.", image="n8n-lead-entrant.webp",
          cible="Sales Ops · CRM · n8n · Claude",
          titre="Lead entrant : du formulaire à HubSpot, qualifié par Claude",
          accroche="Chaque demande du site est nettoyée, notée par Claude, rangée dans HubSpot sans doublon, et le bon commercial est prévenu en quelques secondes.",
