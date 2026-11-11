@@ -30,6 +30,10 @@ ol.steps{margin:0;padding-left:22px}ol.steps li{margin-bottom:8px}
 ul{margin:0;padding-left:20px}li{margin-bottom:6px}
 figure{margin:0}figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px;background:#fafafa}
 figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.wfscroll{overflow-x:auto;border-radius:10px;-webkit-overflow-scrolling:touch}.wfscroll img{min-width:1150px}
+.tag.real{background:var(--ok-soft);color:var(--ok)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}.kpi b{display:block;font-size:26px;color:var(--accent)}.kpi span{font-size:13px;color:var(--muted)}
+@media (max-width:700px){.kpis{grid-template-columns:1fr 1fr}}
 .slack{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:14px 16px;font-size:14.5px;white-space:pre-wrap}
 .slack b{font-weight:600}
 pre{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font:12.5px/1.55 var(--mono);white-space:pre-wrap;margin:0}
@@ -98,7 +102,7 @@ def page_workflow(c):
 <div class="box"><h3>Ce que ça change</h3><p>{c['change']}</p></div>
 </div></section>
 <section><h2>Le workflow dans n8n</h2>
-<figure><a href="../../img/cas/{c['image']}" target="_blank" rel="noopener" title="Ouvrir en grand"><img src="../../img/cas/{c['image']}" alt="Le workflow « {E(c['titre'])} » dans l'éditeur n8n" width="2400" height="745" loading="lazy"></a><figcaption>Capture de l'éditeur n8n, workflow importé tel quel. Cliquer pour agrandir.</figcaption></figure>
+<figure><div class="wfscroll"><a href="../../img/cas/{c['image']}" target="_blank" rel="noopener" title="Ouvrir en grand"><img src="../../img/cas/{c['image']}" alt="Le workflow « {E(c['titre'])} » dans l'éditeur n8n" width="2400" height="745" loading="lazy"></a></div><figcaption>Capture de l'éditeur n8n, workflow importé tel quel. Faire défiler pour lire chaque étape, ou cliquer pour l'ouvrir en grand.</figcaption></figure>
 <ol class="steps" style="margin-top:18px">{li(c['etapes'])}</ol>
 </section>
 <section><h2>Ce que reçoit l'équipe</h2>
@@ -263,6 +267,118 @@ def page_audit():
     return HEAD.format(titre="Audit HubSpot et plan à 30 jours", desc="Cas pratique de consultant CRM : diagnostic HubSpot, pipeline refait avec critères de passage et plan à 30 jours (entreprise fictive).", css=CSS) + corps + FOOT
 
 
+def page_dashboard():
+    corps = """<header><div class="wrap">
+<span class="tag real">Vrai compte HubSpot · données fictives</span>
+<p class="cible">Sales Ops · RevOps · reporting</p>
+<h1>Tableau de bord pipeline : voir où les ventes se perdent</h1>
+<p class="lead">Un tableau de bord construit dans un vrai compte HubSpot, alimenté par 48 transactions de démonstration créées par l'API, puis lu comme le lirait un Sales Ops : où ça bloque, pourquoi, et quoi faire lundi.</p>
+<div class="tools"><span class="tool">HubSpot (rapports et tableaux de bord)</span><span class="tool">API HubSpot CRM</span><span class="tool">Analyse du pipeline</span></div>
+</div></header>
+<main class="wrap">
+<section><div class="grid">
+<div class="box"><h3>Le problème</h3><p>Chez Nordlys (fictif), le directeur commercial reçoit chaque lundi un export Excel du CRM. Personne ne sait à quelle étape les ventes se perdent, ni quelles opportunités dorment.</p></div>
+<div class="box"><h3>Ce que j'ai fait</h3><p>Créé 48 transactions de démonstration dans un vrai HubSpot (étapes, dates, motifs de perte, propriétaire), monté le tableau de bord à partir du modèle « Aperçu du pipeline », réglé la période, puis analysé les chiffres.</p></div>
+</div></section>
+
+<section><h2>Le tableau de bord dans HubSpot</h2>
+<figure><img src="../../img/cas/hubspot-entete.webp" alt="En-tête du tableau de bord « Pipeline Nordlys (DÉMO, données fictives) » dans HubSpot" width="1568" height="120" loading="lazy"><figcaption>Capture réelle de HubSpot. Le nom du tableau de bord rappelle que les données sont fictives.</figcaption></figure>
+<div class="grid" style="margin-top:14px">
+<figure><a href="../../img/cas/hubspot-entonnoir.webp" target="_blank" rel="noopener"><img src="../../img/cas/hubspot-entonnoir.webp" alt="Rapport HubSpot : nombre de transactions par phase du pipeline" width="1359" height="896" loading="lazy"></a><figcaption>Transactions par phase du pipeline.</figcaption></figure>
+<figure><a href="../../img/cas/hubspot-statuts.webp" target="_blank" rel="noopener"><img src="../../img/cas/hubspot-statuts.webp" alt="Rapport HubSpot : répartition des transactions ouvertes, perdues et gagnées" width="1092" height="608" loading="lazy"></a><figcaption>Transactions ouvertes, perdues et gagnées.</figcaption></figure>
+</div>
+</section>
+
+<section><h2>Ce que disent les chiffres</h2>
+<div class="kpis">
+<div class="kpi"><b>42 %</b><span>taux de gain sur les transactions conclues (10 sur 24)</span></div>
+<div class="kpi"><b>40 j</b><span>cycle de vente moyen des transactions gagnées</span></div>
+<div class="kpi"><b>9 / 24</b><span>transactions ouvertes depuis plus de 60 jours</span></div>
+<div class="kpi"><b>8 / 14</b><span>pertes pour « pas maintenant » (budget, projet reporté)</span></div>
+</div>
+<ul style="margin-top:16px">
+<li><b>L'étape « Décideur introduit » est la plus maigre</b> : 2 transactions, contre 5 en présentation. Premier point à vérifier : souvent, les démos se font sans le décideur.</li>
+<li><b>Plus d'une perte sur deux n'est pas un vrai « non »</b> : budget ou projet reporté. Ces prospects reviendront si on les relance au bon moment.</li>
+<li><b>Le pipeline ouvert vieillit</b> : plus d'un tiers des opportunités ouvertes a été créé il y a plus de deux mois. À trier avant de croire le forecast.</li>
+</ul>
+<p style="color:var(--muted);font-size:14px;margin:12px 0 0">Calculs faits sur les 48 transactions de démonstration (données fictives). Aucun montant n'est affiché : le compte de démonstration est en dollars, et les volumes suffisent à la lecture.</p>
+</section>
+
+<section><h2>Ce que je recommande au directeur commercial</h2>
+<div class="tablewrap"><table>
+<tr><th>Action</th><th>Pourquoi</th><th>Comment le suivre</th></tr>
+<tr><td>Rendre le décideur obligatoire avant la démo</td><td>L'étape « Décideur introduit » est la plus maigre</td><td>Propriété obligatoire à l'étape, suivie dans l'entonnoir</td></tr>
+<tr><td>Motif « pas maintenant » = date de relance obligatoire</td><td>8 pertes sur 14 sont reportables</td><td>Tâche créée automatiquement à la date choisie</td></tr>
+<tr><td>Revue des transactions sans activité depuis 60 jours</td><td>Pipeline qui vieillit, forecast surestimé</td><td>Rapport qualité du lundi (cas <a href="../hygiene-crm/">Hygiène CRM</a>)</td></tr>
+</table></div>
+</section>
+
+<section><h2>Mes choix</h2><ul>
+<li>Un rapport du modèle HubSpot affichait 48 « transactions conclues » : il filtre sur la date de clôture prévue, transactions ouvertes comprises. Je ne l'ai pas utilisé tel quel : c'est le genre de chiffre faux qui fait perdre confiance dans un tableau de bord.</li>
+<li>Peu d'indicateurs, tous reliés à une décision. Un tableau de bord sert à décider le lundi matin, pas à tout montrer.</li>
+<li>Les données de démonstration sont marquées « [DÉMO Nordlys] » dans HubSpot et se suppriment en une fois.</li>
+</ul></section>
+</main>
+"""
+    return HEAD.format(titre="Tableau de bord pipeline sur un vrai HubSpot", desc="Cas pratique Sales Ops : tableau de bord pipeline construit dans un vrai HubSpot avec des données de démonstration, analyse et recommandations.", css=CSS) + corps + FOOT
+
+
+def page_cadrage():
+    corps = """<header><div class="wrap">
+<span class="tag">Cas de démonstration · entreprise fictive</span>
+<p class="cible">Consultant IA · adoption de l'IA</p>
+<h1>Cadrage IA : choisir le premier cas d'usage, puis le cadrer</h1>
+<p class="lead">Le livrable qu'un consultant IA rend après deux ateliers : les idées classées par valeur, faisabilité et risque, puis la note de cadrage du cas retenu. Une direction peut dire oui ou non en dix minutes.</p>
+<div class="tools"><span class="tool">Ateliers métiers</span><span class="tool">Matrice de priorisation</span><span class="tool">RGPD</span><span class="tool">Claude</span><span class="tool">Conduite du changement</span></div>
+</div></header>
+<main class="wrap">
+<section><div class="grid">
+<div class="box"><h3>Le contexte</h3><p>Nordlys (fictif) édite un logiciel de planning pour cliniques : 40 commerciaux, 12 personnes au support, 8 au marketing. La direction veut « faire de l'IA » mais ne sait pas par où commencer.</p></div>
+<div class="box"><h3>La méthode</h3><p>Deux ateliers d'1 h 30 (ventes, support et marketing), 14 idées recueillies, chacune notée de 1 à 5 sur la valeur et la faisabilité, et classée selon le risque sur les données.</p></div>
+</div></section>
+
+<section><h2>1. La matrice de priorisation</h2>
+<div class="tablewrap"><table>
+<tr><th>Cas d'usage</th><th>Équipe</th><th>Valeur</th><th>Faisabilité</th><th>Risque données</th><th>Décision</th></tr>
+<tr><td>Compte rendu de RDV versé au CRM</td><td>Ventes</td><td>5</td><td>5</td><td>Faible</td><td><b>Pilote maintenant</b></td></tr>
+<tr><td>Qualification des leads entrants</td><td>Marketing</td><td>4</td><td>5</td><td>Faible</td><td><b>Pilote maintenant</b></td></tr>
+<tr><td>Première version des réponses aux appels d'offres</td><td>Ventes</td><td>5</td><td>3</td><td>Moyen</td><td>Phase 2</td></tr>
+<tr><td>Réponses support niveau 1 depuis la base d'aide</td><td>Support</td><td>4</td><td>4</td><td>Moyen</td><td>Phase 2</td></tr>
+<tr><td>Synthèse des tickets pour l'équipe produit</td><td>Support</td><td>3</td><td>4</td><td>Faible</td><td>Plus tard</td></tr>
+<tr><td>Prévision des ventes par l'IA</td><td>Direction</td><td>3</td><td>2</td><td>Moyen</td><td>Non : le CRM n'est pas fiable (voir l'<a href="../audit-crm/">audit</a>)</td></tr>
+<tr><td>Analyse des plannings de patients</td><td>Produit</td><td>4</td><td>2</td><td>Élevé (santé)</td><td>Non, pas sans DPO ni hébergement HDS</td></tr>
+<tr><td>Rédaction de posts LinkedIn</td><td>Marketing</td><td>2</td><td>5</td><td>Faible</td><td>Usage libre, pas un projet</td></tr>
+</table></div>
+<p style="color:var(--muted);font-size:14px;margin:10px 0 0">Notes données en atelier par les équipes (fictives). 6 idées sur 14 sont regroupées ou écartées en séance.</p>
+</section>
+
+<section><h2>2. La note de cadrage du cas n°1</h2>
+<div class="tablewrap"><table>
+<tr><th style="width:28%">Rubrique</th><th>Contenu</th></tr>
+<tr><td>Objectif</td><td>Que chaque RDV commercial ait un compte rendu propre dans HubSpot le jour même, sans ressaisie.</td></tr>
+<tr><td>Périmètre</td><td>10 commerciaux volontaires, RDV en visio, 6 semaines.</td></tr>
+<tr><td>Hors périmètre</td><td>RDV sur site, envoi automatique au client, toute donnée de patient.</td></tr>
+<tr><td>Solution</td><td>Transcription de la visio, compte rendu rédigé par Claude, relu par le commercial, puis versé dans HubSpot avec la tâche de relance (voir le cas <a href="../compte-rendu-rdv/">Compte rendu de RDV</a>).</td></tr>
+<tr><td>Règles</td><td>Relecture humaine obligatoire. Le client est prévenu de l'enregistrement. Transcriptions supprimées après 30 jours. DPO consulté avant le lancement.</td></tr>
+<tr><td>Indicateurs</td><td>Part des RDV avec un compte rendu dans le CRM sous 24 h ; temps de saisie par RDV ; satisfaction des commerciaux (sur 5) ; part des comptes rendus corrigés.</td></tr>
+<tr><td>Objectifs à 6 semaines</td><td>Plus de 80 % des RDV documentés sous 24 h ; moins de 5 minutes de saisie par RDV ; satisfaction d'au moins 4 sur 5.</td></tr>
+<tr><td>Risques et parades</td><td>Erreur dans le compte rendu : relecture obligatoire et suivi des corrections. Refus d'enregistrement par le client : saisie manuelle prévue. Faible adoption : un référent par équipe et un point de 15 minutes par semaine.</td></tr>
+<tr><td>Planning</td><td>S1 : cadrage, consentements, DPO. S2 et S3 : construction et tests. S4 et S5 : pilote. S6 : bilan et décision de déploiement.</td></tr>
+<tr><td>Gouvernance</td><td>Sponsor : directeur commercial. Chef de projet : consultant IA. Référents : 2 commerciaux. Avis : DPO.</td></tr>
+</table></div>
+<p style="color:var(--muted);font-size:14px;margin:10px 0 0">Objectifs fixés pour l'exercice : aucun résultat n'est présenté comme obtenu.</p>
+</section>
+
+<section><h2>Mes choix</h2><ul>
+<li>Commencer par un cas à faible risque et à usage quotidien : l'adoption se gagne sur un premier succès visible, pas sur le cas le plus ambitieux.</li>
+<li>Dire non à la prévision des ventes par l'IA tant que le CRM n'est pas propre : l'IA amplifie la qualité des données, bonne ou mauvaise.</li>
+<li>Exclure les données de santé du premier pilote : le risque juridique tuerait le projet avant qu'il ait prouvé quoi que ce soit.</li>
+</ul></section>
+</main>
+"""
+    return HEAD.format(titre="Cadrage IA : priorisation et note de cadrage", desc="Cas pratique de consultant IA : matrice de priorisation des cas d'usage et note de cadrage d'un pilote Claude (entreprise fictive).", css=CSS) + corps + FOOT
+
+
 if __name__ == "__main__":
     for c in CAS:
         os.makedirs(os.path.join(ICI, c["slug"]), exist_ok=True)
@@ -271,3 +387,7 @@ if __name__ == "__main__":
     os.makedirs(os.path.join(ICI, "audit-crm"), exist_ok=True)
     open(os.path.join(ICI, "audit-crm", "index.html"), "w", encoding="utf-8").write(page_audit())
     print("audit-crm")
+    for slug, fn in (("tableau-de-bord-pipeline", page_dashboard), ("cadrage-ia", page_cadrage)):
+        os.makedirs(os.path.join(ICI, slug), exist_ok=True)
+        open(os.path.join(ICI, slug, "index.html"), "w", encoding="utf-8").write(fn())
+        print(slug)

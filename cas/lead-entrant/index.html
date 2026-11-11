@@ -37,6 +37,10 @@ ol.steps{margin:0;padding-left:22px}ol.steps li{margin-bottom:8px}
 ul{margin:0;padding-left:20px}li{margin-bottom:6px}
 figure{margin:0}figure img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px;background:#fafafa}
 figcaption{font-size:13px;color:var(--muted);margin-top:6px}
+.wfscroll{overflow-x:auto;border-radius:10px;-webkit-overflow-scrolling:touch}.wfscroll img{min-width:1150px}
+.tag.real{background:var(--ok-soft);color:var(--ok)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}.kpi b{display:block;font-size:26px;color:var(--accent)}.kpi span{font-size:13px;color:var(--muted)}
+@media (max-width:700px){.kpis{grid-template-columns:1fr 1fr}}
 .slack{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:14px 16px;font-size:14.5px;white-space:pre-wrap}
 .slack b{font-weight:600}
 pre{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font:12.5px/1.55 var(--mono);white-space:pre-wrap;margin:0}
@@ -67,7 +71,7 @@ footer{padding:30px 0 50px;border-top:1px solid var(--line);color:var(--muted);f
 <div class="box"><h3>Ce que ça change</h3><p>Zéro ressaisie, des fiches HubSpot propres (clé unique : l'email), et les leads chauds traités en premier par le commercial du bon segment.</p></div>
 </div></section>
 <section><h2>Le workflow dans n8n</h2>
-<figure><a href="../../img/cas/n8n-lead-entrant.webp" target="_blank" rel="noopener" title="Ouvrir en grand"><img src="../../img/cas/n8n-lead-entrant.webp" alt="Le workflow « Lead entrant : du formulaire à HubSpot, qualifié par Claude » dans l'éditeur n8n" width="2400" height="745" loading="lazy"></a><figcaption>Capture de l'éditeur n8n, workflow importé tel quel. Cliquer pour agrandir.</figcaption></figure>
+<figure><div class="wfscroll"><a href="../../img/cas/n8n-lead-entrant.webp" target="_blank" rel="noopener" title="Ouvrir en grand"><img src="../../img/cas/n8n-lead-entrant.webp" alt="Le workflow « Lead entrant : du formulaire à HubSpot, qualifié par Claude » dans l'éditeur n8n" width="2400" height="745" loading="lazy"></a></div><figcaption>Capture de l'éditeur n8n, workflow importé tel quel. Faire défiler pour lire chaque étape, ou cliquer pour l'ouvrir en grand.</figcaption></figure>
 <ol class="steps" style="margin-top:18px"><li>Le formulaire du site envoie la demande au <b>webhook</b>.</li><li>Le lead est <b>nettoyé</b> : email en minuscules, téléphone normalisé, adresses perso repérées (Gmail, Orange…), emails invalides écartés.</li><li><b>Claude</b> note le lead de 0 à 100 selon le client idéal et écrit un résumé de 2 phrases pour le commercial.</li><li>Le contact est <b>créé ou mis à jour</b> dans HubSpot (clé : l'email, donc pas de doublon), avec le score et le résumé. S'il existe déjà, il garde son commercial et son cycle de vie.</li><li>Lead chaud (score ≥ 70) : <b>tâche « rappeler sous 1 h »</b> dans HubSpot et <b>alerte Slack</b> au commercial. Sinon : nurturing, sans alerte.</li></ol>
 </section>
 <section><h2>Ce que reçoit l'équipe</h2>
