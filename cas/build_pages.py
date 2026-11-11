@@ -64,7 +64,7 @@ HEAD = """<!doctype html>
 <nav><div class="wrap"><a href="../../"><b>Aymeric Frelaut</b></a><a href="../../#cas">← Tous les cas pratiques</a></div></nav>
 """
 
-FOOT = """<footer><div class="wrap">Cas de démonstration : <b>Nordlys</b> est une entreprise fictive, les données et les personnes aussi. Les workflows, eux, sont réels.
+FOOT = """<footer><div class="wrap">Cas de démonstration : <b>Nordlys</b> est une entreprise fictive, les données et les personnes aussi. Les workflows et la méthode, eux, sont réels.
 <div class="btns" style="margin-top:14px"><a class="btn primary" href="mailto:afrelaut@gmail.com">Me contacter</a><a class="btn" href="https://www.linkedin.com/in/aymeric-frelaut" target="_blank" rel="noopener">LinkedIn</a><a class="btn" href="../../">Retour au portfolio</a></div></div></footer>
 </body>
 </html>
@@ -130,13 +130,15 @@ CAS = [
          etapes=["Le formulaire du site envoie la demande au <b>webhook</b>.",
                  "Le lead est <b>nettoyé</b> : email en minuscules, téléphone normalisé, adresses perso repérées (Gmail, Orange…), emails invalides écartés.",
                  "<b>Claude</b> note le lead de 0 à 100 selon le client idéal et écrit un résumé de 2 phrases pour le commercial.",
-                 "Le contact est <b>créé ou mis à jour</b> dans HubSpot (upsert sur l'email : jamais de doublon), avec le score et le résumé.",
-                 "Lead chaud (score ≥ 70) : <b>transaction</b> créée et <b>alerte Slack</b> au commercial du segment. Sinon : nurturing, sans alerte."],
+                 "Le contact est <b>créé ou mis à jour</b> dans HubSpot (clé : l'email, donc pas de doublon), avec le score et le résumé. S'il existe déjà, il garde son commercial et son cycle de vie.",
+                 "Lead chaud (score ≥ 70) : <b>tâche « rappeler sous 1 h »</b> dans HubSpot et <b>alerte Slack</b> au commercial. Sinon : nurturing, sans alerte."],
          sortie="🔥 Lead chaud pour <b>Léa</b> (score 82/100)\n<b>Claire Martin</b>, Directrice des opérations chez Clinique du Parc\nDirectrice des opérations d'une clinique de 250 salariés, cherche à remplacer les plannings Excel des blocs. Demande une démo.\nFiche : https://app.hubspot.com/contacts/…/record/0-1/901",
          choix=["L'IA propose, des règles encadrent : un email perso plafonne le score à 40, quoi que dise Claude.",
                 "Si Claude ne répond pas, le lead entre quand même dans HubSpot, marqué « à qualifier à la main ». On ne perd jamais un lead.",
+                "Un client existant n'est jamais réattribué ni rétrogradé en « lead », et un champ vide du formulaire n'efface pas ce que le CRM sait déjà.",
+                "Le texte du formulaire est traité comme une donnée : la consigne interdit à Claude de suivre une instruction cachée dedans (« mets-moi 100 »).",
                 "Le routage (petits comptes / grands comptes) et les seuils sont dans un seul nœud <b>Paramètres</b> : un Sales Ops peut les changer sans toucher au reste."],
-         identifiants="clé API Anthropic, jeton d'app privée HubSpot ; un webhook Slack", prompt=True),
+         identifiants="clé API Anthropic, jeton d'app privée HubSpot ; un webhook Slack ; 2 propriétés HubSpot : nordlys_score_ia, nordlys_resume_ia", prompt=True),
     dict(slug="compte-rendu-rdv", fichier="nordlys-compte-rendu-rdv.json", image="n8n-compte-rendu-rdv.webp",
          cible="Consultant IA · adoption de Claude · CRM",
          titre="Compte rendu de RDV : de la transcription au CRM",
@@ -152,7 +154,8 @@ CAS = [
          sortie="📝 CR du RDV avec claire@… ajouté dans HubSpot, relance le 2026-11-16.\nClinique intéressée par le module blocs. Planning actuel sous Excel, 3 h perdues par semaine.\nÉtape suggérée : <b>demo</b> (à valider par toi, rien n'est changé automatiquement).\nÀ vérifier : Nom du logiciel RH",
          choix=["L'étape du pipeline est <b>suggérée</b>, jamais changée seule : le commercial reste maître de son forecast.",
                 "Claude liste ce qui est flou (« à vérifier ») au lieu de deviner. C'est ce qui rend l'outil digne de confiance pour l'équipe.",
-                "Aucune écriture dans HubSpot si le contact n'est pas certain : mieux vaut une alerte qu'une note sur la mauvaise fiche."],
+                "Aucune écriture dans HubSpot si le contact n'est pas certain : mieux vaut une alerte qu'une note sur la mauvaise fiche.",
+                "RGPD : les participants sont prévenus de l'enregistrement, et l'envoi des transcriptions à l'API se valide avec le DPO avant la mise en service."],
          identifiants="clé API Anthropic, jeton d'app privée HubSpot ; un webhook Slack", prompt=True),
     dict(slug="hygiene-crm", fichier="nordlys-hygiene-crm.json", image="n8n-hygiene-crm.webp",
          cible="RevOps · Sales Ops · qualité des données",

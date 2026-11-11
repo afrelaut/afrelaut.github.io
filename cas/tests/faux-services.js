@@ -27,7 +27,7 @@ http.createServer((req, res) => {
     const p = u.pathname;
     if (p === '/v1/messages') { if (JSON.stringify(body.messages).includes('PANNE')) { res.writeHead(529); return res.end('{"type":"error"}'); } const t = (body.system.match(/Tâche : (\w+)/) || [])[1]; return send({ content: [{ type: 'text', text: JSON.stringify(claude[t]) }] }); }
     if (p === '/crm/v3/objects/contacts/batch/upsert') return send({ results: [{ id: '901', properties: body.inputs[0].properties }] });
-    if (p === '/crm/v3/objects/contacts/search') return send(body.filterGroups[0].filters[0].value.startsWith('claire') ? { total: 1, results: [{ id: '902', properties: { hubspot_owner_id: '111' } }] } : { total: 0, results: [] });
+    if (p === '/crm/v3/objects/contacts/search') return send(body.filterGroups[0].filters[0].value.startsWith('claire') ? { total: 1, results: [{ id: '902', properties: { hubspot_owner_id: '333', lifecyclestage: 'customer' } }] } : { total: 0, results: [] });
     if (p === '/crm/v3/objects/contacts') { const pg = u.searchParams.get('after') ? 1 : 0; return send({ results: contacts[pg], ...(pg === 0 ? { paging: { next: { after: '2' } } } : {}) }); }
     if (p === '/crm/v3/objects/deals' && req.method === 'GET') return send({ results: deals });
     if (p === '/crm/v3/objects/companies/search') return send({ results: [{ id: '501', properties: { name: 'Clinique du Parc', domain: 'cliniqueduparc.fr', hubspot_owner_id: '111' } }, { id: '502', properties: { name: 'Centre Calme', domain: 'calme.fr', hubspot_owner_id: '222' } }] });

@@ -74,11 +74,16 @@ def poster(chemin, data):
     req = urllib.request.Request(f"http://127.0.0.1:{PORT_N8N}/webhook/{chemin}", json.dumps(data).encode(), {"content-type": "application/json"})
     urllib.request.urlopen(req, timeout=20).read(); time.sleep(4)
 
-vider(); poster("nordlys-lead", {"nom_complet": "Claire Martin", "email": " Claire.Martin@CliniqueDuParc.fr ", "entreprise": "Clinique du Parc", "poste": "Directrice des opérations", "message": "Démo SVP"})
+vider(); poster("nordlys-lead", {"nom_complet": "Marc Petit", "email": " Marc.Petit@CliniqueDuParc.fr ", "entreprise": "Clinique du Parc", "poste": "Directeur des opérations", "message": "Démo SVP"})
 rq = requetes(); up = [x for x in rq if x["path"].endswith("batch/upsert")]
-verifier("lead : contact créé avec email nettoyé", bool(up) and up[0]["body"]["inputs"][0]["id"] == "claire.martin@cliniqueduparc.fr")
-verifier("lead : 250 salariés → petits comptes (Léa)", bool(up) and up[0]["body"]["inputs"][0]["properties"]["hubspot_owner_id"] == "111")
-verifier("lead chaud : transaction + alerte Slack", any(x["path"] == "/crm/v3/objects/deals" for x in rq) and any(x["path"] == "/slack" for x in rq))
+pr = up[0]["body"]["inputs"][0]["properties"] if up else {}
+verifier("lead nouveau : contact créé avec email nettoyé", bool(up) and up[0]["body"]["inputs"][0]["id"] == "marc.petit@cliniqueduparc.fr")
+verifier("lead nouveau : 250 salariés → petits comptes (Léa), cycle de vie « lead »", pr.get("hubspot_owner_id") == "111" and pr.get("lifecyclestage") == "lead")
+verifier("lead chaud : tâche « rappeler sous 1 h » liée au contact + alerte Slack", any(x["path"] == "/crm/v3/objects/tasks" and x["body"]["associations"][0]["types"][0]["associationTypeId"] == 204 for x in rq) and any(x["path"] == "/slack" for x in rq))
+vider(); poster("nordlys-lead", {"nom_complet": "Claire Martin", "email": "claire.martin@cliniqueduparc.fr", "entreprise": "Clinique du Parc"})
+rq = requetes(); up = [x for x in rq if x["path"].endswith("batch/upsert")]
+pr = up[0]["body"]["inputs"][0]["properties"] if up else {}
+verifier("lead déjà client : commercial conservé, cycle de vie non touché, champs vides non écrasés", pr.get("hubspot_owner_id") == "333" and "lifecyclestage" not in pr and "jobtitle" not in pr)
 vider(); poster("nordlys-lead", {"nom_complet": "Paul Panne", "email": "paul@clinique.fr", "entreprise": "PANNE"})
 rq = requetes(); up = [x for x in rq if x["path"].endswith("batch/upsert")]
 verifier("lead : Claude en panne → contact créé quand même, à qualifier à la main", bool(up) and "à la main" in up[0]["body"]["inputs"][0]["properties"]["nordlys_resume_ia"])
